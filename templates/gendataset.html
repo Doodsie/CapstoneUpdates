@@ -99,6 +99,9 @@
             console.error('Error accessing media devices:', err);
         });
     
+        var url = "{{ url_for('vidfeed_dataset', nbr=prs) }}";
+        $('#addfaceimg').attr('src', url);
+        $('#addfaceimg').show();
         $('#addfacestart').hide();
         $('#addfacestop').show();
         $('#training').show();
@@ -107,10 +110,10 @@
     function stopCamera() {
         videoElement.pause();
         videoElement.srcObject.getTracks().forEach(track => track.stop());
+        $('#addfaceimg').attr('src', '');
         $('#videoElement').replaceWith($('#addfaceimg'));
         $('#addfacestart').show();
         $('#addfacestop').hide();
-        $('#training').show();
     }
     
     // Handle the click event of the Train Face button
