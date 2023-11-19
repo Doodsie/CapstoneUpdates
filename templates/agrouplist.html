@@ -89,7 +89,7 @@
                                                     <td>
 
                                                         <div class="tablephoto">
-                                                        {% if item[4] != '' %}
+                                                        {% if item[4] != ' ' %}
                                                           <img src="{{ url_for('static', filename='user_photo/') }}{{ item[4] }}" />
                                                         {% else %}
                                                           <img src="{{ url_for('static', filename='assets/img/faces/avatar.jpg') }}" />
