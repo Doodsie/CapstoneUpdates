@@ -1,0 +1,14 @@
+{% include "header.html" %}
+<body>
+<h2>Update Course</h2>
+
+    <form action="{{ url_for('update_group', group_id=group[0]) }}" method="post">
+<input type="hidden" name="group_id" value="{{ group[0] }}">
+        Group Name: <input type="text" name="group_name" value="{{ group[1] }}" required>
+        Creator ID: <input type="number" name="creater_id" value="{{ group[2] }}" required>
+<input type="submit" value="Update Group">
+</form>
+
+    <a href="{{ url_for('manage_groups') }}">Back to Manage Groups</a>
+</body>
+{% include "footer.html" %}

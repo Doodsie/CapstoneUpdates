@@ -1,78 +1,52 @@
 {% include "header.html" %}
 <div class="content">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header card-header-icon" data-background-color="purple">
-                                    <i class="material-icons">assignment</i>
-                                </div>
-                                <div class="card-content">
-                                    <h4 class="card-title"><b>Create new Channel</b></h4>
-                                    <form role="form" action="{{ url_for('groups') }}" method="post">
-                                        <div class="form-group label-floating">
-                                            <label class="control-label">Course Name</label>
-                                            <input type="text" class="form-control" name="group_name" required>
-                                        </div>
-
-                                        <button type="submit" class="btn btn-fill btn-rose">Create Course</button>
-                                    </form>
-                                </div>
-
-                                <!-- end content-->
-                            </div>
-                            <!--  end card  -->
-                        </div>
-                        <!-- end col-md-12 -->
-
-						<div class="md-6">
-                            <div class="card">
-                                <div class="card-header card-header-icon" data-background-color="rose">
-                                    <i class="material-icons">mail_outline</i>
-                                </div>
-                                <div class="card-content">
-                                    <h4 class="card-title"><b>Course Channels</b></h4>
-                                    <div class="toolbar">
-                                    </div>
-                                    <div class="material-datatables">
-                                        <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%; text-transform:capitalize;">
-                                            <thead>
-                                                <tr>
-                                                    <th><b>Courses</b></th>
-                                                    <th><b>Date and time created</b></th>
-                                                    <th class="disabled-sorting text-right"><b>Actions</b></th>
-                                                </tr>
-                                            </thead>
-                                            <tfoot>
-                                                <tr>
-                                                    <th><b>Courses</b></th>
-                                                    <th><b>Date and time created</b></th>
-                                                    <th class="text-right"><b>Actions</b></th>
-                                                </tr>
-                                            </tfoot>
-                                            <tbody>
-    {% for item in data %}
-    <tr>
-        <td><a class="btn btn-primary btn-lg" href='/agrouplist?group_id={{ item[0] }}&action=view_members&groupteacher={{ session.user_name }}&groupname={{ item[1] }}'>{{ item[1] }}</a></td>
-        <td>{{ item[2] }}</td>
-        <td class="text-right">
-            <button class="btn btn-warning btn-sm rename-button" data-group-id="{{ item[0] }}" data-group-name="{{ item[1] }}">Rename  <i class="material-icons">create</i>  </button>
-            <a class="btn btn-danger btn-sm" href='delete?id={{ item[0] }}&tname=groups&rurl=groups' onclick="return confirm('Are you sure you want to remove this group?')">Delete  <i class="material-icons">close</i></a>
-
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+    <div class="container-fluid">
+        <div class="row">
+            <div class="md-6">
+                <div class="card">
+                    <div class="card-header card-header-icon" data-background-color="rose">
+                        <i class="material-icons">mail_outline</i>
                     </div>
-                    <!-- end row -->
+                    <div class="card-content">
+                        <h4 class="card-title"><b>Course Channels</b></h4>
+                        <div class="toolbar" style="display: flex; justify-content: flex-end; align-items: center; margin-top: -50px;">
+                            <button id="toggleCreateCourseForm" class="btn btn-rose">Create Course</button>
+                            <div id="createCourseForm" style="display: none; margin-right: 10px;">
+                                <form role="form" action="{{ url_for('groups') }}" method="post">
+                                    <div class="form-group label-floating">
+                                        <label class="control-label">Course Name</label>
+                                        <input type="text" style="width: 250px;" class="form-control" name="group_name" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-rose">Create Course</button>
+                                    <button id="hideCreateCourseForm" class="btn btn-danger">Close</button>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                        <div class="material-datatables" style="margin:20px 20px;" >
+                            <div style="cursor: pointer;" >
+                            {% for item in data %}
+                            <div class="row clickable-row" style="box-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px; border-radius:10px; padding:10px;" href='/agrouplist?group_id={{ item[0] }}&action=view_members&groupteacher={{ session.user_name }}&groupname={{ item[1] }}'>
+                                <div class="col-md-6 text-left" style="padding:20px; text-transform: uppercase; font-size:20px;" >
+                                    {{ item[1] }}
+                                </div>
+                                <div class="col-md-6 text-right" >
+                                <a class="btn btn-warning btn-sm rename-button" data-group-id="{{ item[0] }}" data-group-name="{{ item[1] }}">Rename  <i class="material-icons">create</i></a>
+                                <a class="btn btn-danger btn-sm" href='delete?id={{ item[0] }}&tname=groups' onclick="return confirm('Are you sure you want to remove this group?')">Delete  <i class="material-icons">close</i></a>
+                                </div>
+                            </div>
+                                <br>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
+
+        </div>
+        <!-- end row -->
+    </div>
+</div>
 
 {% include "footer.html" %}
 <script type="text/javascript">
@@ -142,6 +116,25 @@
                 });
             }
         });
+    });
+
+    $(document).on('click', '.clickable-row', function() {
+        window.location = $(this).attr('href');
+    });
+     document.getElementById('toggleCreateCourseForm').addEventListener('click', function () {
+        var createCourseForm = document.getElementById('createCourseForm');
+        createCourseForm.style.display = createCourseForm.style.display === 'none' ? 'flex' : 'none';
+
+        // Toggle visibility of the "Create Course" button
+        document.getElementById('toggleCreateCourseForm').style.display = createCourseForm.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById('hideCreateCourseForm').addEventListener('click', function () {
+        var createCourseForm = document.getElementById('createCourseForm');
+        createCourseForm.style.display = 'none';
+
+        // Show the "Create Course" button when closing the form
+        document.getElementById('toggleCreateCourseForm').style.display = 'block';
     });
 </script>
 

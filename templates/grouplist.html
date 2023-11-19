@@ -3,7 +3,7 @@
                 <div class="container-fluid">
                     <div class="row">
                           {% if data1 != "" %}
-						<div class="md-6">
+						<div class="col-md-6">
                             <div class="card">
                                 <div class="card-header card-header-icon" data-background-color="rose">
                                     <i class="material-icons">mail_outline</i>
@@ -37,6 +37,51 @@
                             </div>
 
                         </div>
+
+                        <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header card-header-icon" data-background-color="blue">
+                                <i class="material-icons">file_upload</i>
+                            </div>
+                            <div class="card-content">
+                                <h4 class="card-title">File Sharing</h4>
+                                <form action="/grouplist?group_id={{ group_id }}&user_id={{ user_id }}&action=file_share" method="post" enctype="multipart/form-data">
+                                    <input type="file" name="file">
+                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                </form>
+                                {% if file_data %}
+                                <h5>Shared Files:</h5>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>File Name</th>
+                                            <th>Uploaded By</th>
+                                            <th>Upload Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for file in file_data %}
+                                            <tr>
+                                                <td>{{ file[3] }}</td>  {# Assuming 'file_name' is at index 3 #}
+                                                <td>{{ file[5] }}</td>  {# Assuming 'uploaded_by' is at index 5 #}
+                                                <td>{{ file[4].strftime('%Y-%m-%d %H:%M:%S') }}</td>  {# Assuming 'upload_datetime' is at index 4 #}
+                                                <td>
+                                                    <a href="{{ url_for('download_file', filename=file[3]) }}">Download</a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    <!-- end row -->
+                </div>
+            </div>
+
                       {% endif %}
 
 
@@ -51,24 +96,6 @@
                                     </div>
                                     <div class="material-datatables">
                                         <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%; text-transform:capitalize;">
-                                            <thead>
-                                                <tr>
-                                                    <th><b>Course</b></th>
-                                                    <th><b>Teacher</b></th>
-													<th><b>Students</b></th>
-                                                    <th><b>Join Meeting</b></th>
-                                                    <th><b>Leave Course</b></th>
-                                                </tr>
-                                            </thead>
-                                            <tfoot>
-                                                <tr>
-                                                    <th><b>Course</b></th>
-                                                    <th><b>Teacher</b></th>
-													<th><b>Students</b></th>
-                                                    <th><b>Join Meeting</b></th>
-                                                    <th><b>Leave Course</b></th>
-                                                </tr>
-                                            </tfoot>
                                             <tbody>
 												{% for item in data %}
                                                 <tr>
@@ -93,6 +120,7 @@
 
                     </div>
                     <!-- end row -->
+
                 </div>
             </div>
 

@@ -43,96 +43,84 @@
                 <div class="container-fluid">
 <section class="py-1">
 
-    <div class="row mx-auto text-center">
+      <div class="row mx-auto text-center">
         <div class="col-md-3-lg-2">
             {% if not user_completed_process %}
-            <button onclick="startCamera();" id="addfacestart" class="btn btn-warning btn-lg">Start</button>
-            <button onclick="stopCamera();" style="display:none;" class="btn btn-danger btn-lg" id="addfacestop">Stop</button>
-            <a class="btn btn-success btn-lg" href="{{ url_for('train_classifier', nbr=prs) }}" id="training" style="display:none;">Train Face</a>
+            <button onclick="$('#addfaceimg').attr('src','{{ url_for('vidfeed_dataset', nbr=prs) }}'); $('#addfaceimg').show(); $('#addfacestart').hide(); $('#addfacestop').show(); $('#training').show();" id="addfacestart" class="btn btn-warning btn-lg">Start</button>
+            <button onclick="$('#addfaceimg').attr('src',''); $('#addfaceimg').hide(); $('#addfacestart').show(); $('#addfacestop').hide();" style="display:none;" class="btn btn-danger btn-lg" id="addfacestop">Stop</button>
+
+            <a class="btn btn-success btn-lg" href="{{ url_for('train_classifier', nbr=prs) }}" id="training" style="display:none;"> Train Face</a>
+
+
         </div>
     </div>
     <div class="row mt-5">
         <div class="col-md-3-lg-2 mx-auto text-center">
+            <!--h3>Generate Dataset {{ prs }}</h3-->
             <h3><b>Generate Face</b></h3>
             <hr>
+            <!--img src="{{ url_for('vidfeed_dataset', nbr=prs) }}" width="100%" height="100%" class="img-thumbnail1" id="addfaceimg"-->
             <img width="25%" height="25%" class="img-thumbnail1" id="addfaceimg">
             <h4>Please ensure that you are the only one in front of the camera.</h4>
-            <h4>Please ensure that you train your face in good lighting conditions.</h4>
+            <h4>Please ensure that you train your face in a good lighting condition.</h4>
         </div>
     </div>
-    {% else %}
-        <h1>You can only Train your face ONCE.</h1>
-        <h3>Contact an admin for more info.</h3>
-    {% endif %}
-    </section>
+     {% else %}
+              <h1>You can only Train your face ONCE.</h1>
+              <h3>Contact an admin for more info.</h3>
+            {% endif %}
+
+</section>
+
+                </div>
+</div>
+
+<!-- Modal Dialog -->
+<div id="confirmationModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <p>By clicking the "<b>AGREE</b>" button, you are expressly agreeing to our compliance with the Data Privacy Act of 2012. This act underscores our unwavering commitment to safeguarding the privacy and security of your personal information as it pertains to our Attendance Management System utilizing Facial Recognition. We adhere to stringent data protection measures, ensuring that your facial data is handled with the utmost care and in full compliance with the law. This agreement signifies your acknowledgment of our obligations and your trust in us to manage your data responsibly and securely.</p>
+        <button id="okButton" class="btn btn-primary">Agree</button>
+        <button id="cancelButton" class="btn btn-secondary">Cancel</button>
     </div>
-    </div>
-    
-    <!-- Modal Dialog -->
-    <div id="confirmationModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <p>By clicking the "<b>AGREE</b>" button, you are expressly agreeing to our compliance with the Data Privacy Act of 2012. This act underscores our unwavering commitment to safeguarding the privacy and security of your personal information as it pertains to our Attendance Management System utilizing Facial Recognition. We adhere to stringent data protection measures, ensuring that your facial data is handled with the utmost care and in full compliance with the law. This agreement signifies your acknowledgment of our obligations and your trust in us to manage your data responsibly and securely.</p>
-            <button id="okButton" class="btn btn-primary">Agree</button>
-            <button id="cancelButton" class="btn btn-secondary">Cancel</button>
-        </div>
-    </div>
-    
-    {% include "footer.html" %}
-    <script>
-    $('.header_nav').removeClass('active');
-    $('.vfdataset_page').addClass('active');
-    $('#header_page_title').html('Face Registration');
-    
-    let videoElement = document.createElement('video');
-    videoElement.setAttribute('id', 'videoElement');
-    videoElement.setAttribute('playsinline', '');
-    videoElement.setAttribute('muted', '');
-    
-    function startCamera() {
-        navigator.mediaDevices.getUserMedia({ audio: true, video: { width: 1280, height: 720 } })
-        .then(function(mediaStream) {
-            videoElement.srcObject = mediaStream;
-            $('#addfaceimg').replaceWith(videoElement);
-            videoElement.play();
-        })
-        .catch(function(err) {
-            console.error('Error accessing media devices:', err);
-        });
-    
-        var url = "{{ url_for('vidfeed_dataset', nbr=prs) }}";
-        $('#addfaceimg').attr('src', url);
+</div>
+
+{% include "footer.html" %}
+<script>
+$('.header_nav').removeClass('active');
+$('.vfdataset_page').addClass('active');
+$('#header_page_title').html('Face Registration');
+
+     function startDataset() {
+        $('#addfaceimg').attr('src', '{{ url_for('vidfeed_dataset', nbr=prs) }}');
         $('#addfaceimg').show();
         $('#addfacestart').hide();
         $('#addfacestop').show();
-        $('#training').show();
+        $('#training').show(); // Use the updated ID here
     }
-    
-    function stopCamera() {
-        videoElement.pause();
-        videoElement.srcObject.getTracks().forEach(track => track.stop());
+
+    function stopDataset() {
         $('#addfaceimg').attr('src', '');
-        $('#videoElement').replaceWith($('#addfaceimg'));
+        $('#addfaceimg').hide();
         $('#addfacestart').show();
-        $('#addfacestop').hide();
+       $('#training').show(); // Use the updated ID here
     }
-    
+
     // Handle the click event of the Train Face button
-    $('#training').click(function(event) {
+    $('#training').click(function (event) {
         event.preventDefault(); // Prevent the default action
         // Display the confirmation modal
         $('#confirmationModal').css('display', 'block');
     });
-    
+
     // Close the modal and prevent default action when "Cancel" is clicked
-    $('#cancelButton').click(function() {
+    $('#cancelButton').click(function () {
         $('#confirmationModal').css('display', 'none');
     });
-    
+
     // Proceed with the action when "OK" is clicked
-    $('#okButton').click(function() {
+    $('#okButton').click(function () {
         $('#confirmationModal').css('display', 'none');
         // Navigate to the URL
         window.location.href = "{{ url_for('train_classifier', nbr=prs) }}";
     });
-    </script>
-    
+</script>

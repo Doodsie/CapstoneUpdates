@@ -35,6 +35,20 @@
 
 
 </style>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="alert-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-success alert-{{ category }}" role="alert" style="text-align:center;">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
  <div class="content">
                 <div class="container-fluid">
                     <div class="row">
@@ -285,6 +299,47 @@
                         </div>
                         <!-- end col-md-12 -->
                         {% endif %}
+
+                        <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header card-header-icon" data-background-color="blue">
+                                <i class="material-icons">file_upload</i>
+                            </div>
+                            <div class="card-content">
+                                <h4 class="card-title">File Sharing</h4>
+                                <form action="/agrouplist?group_id={{ group_id }}&user_id={{ user_id }}&action=file_share" method="post" enctype="multipart/form-data">
+                                    <input type="file" name="file">
+                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                </form>
+                                {% if file_data %}
+    <h5>Shared Files:</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Uploaded By</th>
+                <th>Upload Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in file_data %}
+                <tr>
+                    <td>{{ file[3] }}</td>  {# Assuming 'file_name' is at index 3 #}
+                    <td>{{ file[5] }}</td>  {# Assuming 'uploaded_by' is at index 5 #}
+                    <td>{{ file[4].strftime('%Y-%m-%d %H:%M:%S') }}</td>  {# Assuming 'upload_datetime' is at index 4 #}
+                    <td>
+                        <a href="{{ url_for('download_file', filename=file[3]) }}">Download</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
 
                     </div>
                     <!-- end row -->

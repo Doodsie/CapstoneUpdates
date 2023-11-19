@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request, session, redirect, url_for, Response, jsonify, flash
+from flask import Flask, render_template, request, session, redirect, url_for, Response, jsonify, flash,  send_from_directory
 import mysql.connector
 import cv2
 from PIL import Image
@@ -8,7 +8,7 @@ import os
 import time
 from datetime import date, datetime
 import re
-
+from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
@@ -28,7 +28,6 @@ config = {
 cnx = mysql.connector.connect(**config)
 mycursor = cnx.cursor(buffered=True)
 
-    
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Generate dataset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 def generate_dataset(nbr):
     face_classifier = cv2.CascadeClassifier("resources/haarcascade_frontalface_default.xml")
@@ -692,10 +691,15 @@ def updateownprofile_submit():
         else:
             photo = request.form['photo']
 
-        mycursor.execute(
-            "UPDATE users SET first_name='" + str(first_name) + "',last_name='" + str(last_name) + "',email='" + str(
-                email) + "',phone='" + str(phone) + "', photo='" + str(photo) + "', dob='" + str(
-                dob) + "', i_d='" + str(i_d) + "' WHERE id='" + str(userlist_id) + "'")
+        query = (
+            "UPDATE users SET "
+            "first_name=%s, last_name=%s, email=%s, phone=%s, photo=%s, dob=%s, i_d=%s "
+            "WHERE id=%s"
+        )
+
+        values = (first_name, last_name, email, phone, photo, dob, i_d, userlist_id)
+
+        mycursor.execute(query, values)
         cnx.commit()
 
     # return render_template("updateownprofile.html")
@@ -917,7 +921,38 @@ def grouplist():
             "SELECT users.first_name,users.last_name,users.user_role FROM `join_groups` left JOIN tbl_groups ON join_groups.group_id=tbl_groups.id left JOIN users ON join_groups.user_id=users.id WHERE join_groups.group_id='" + str(
                 group_id) + "'")
         data1 = mycursor.fetchall()
-    return render_template('grouplist.html', data=data, data1=data1, groupteacher=groupteacher, groupname=groupname)
+
+    if action == 'file_share':
+        print("Received file upload request")
+        if 'file' in request.files:
+            print("File found in request")
+            file = request.files['file']
+            if file and allowed_file(file.filename):
+                print("File is valid")
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+
+                # Get user_id from the session
+                user_id = session.get('user_id')
+                print(f"User ID: {user_id}")
+
+                if user_id is not None:
+                    # Save file information to the database
+                    mycursor.execute(
+                        "INSERT INTO files (group_id, user_id, file_name, uploaded_by, upload_datetime) VALUES (%s, %s, %s, %s, NOW())",
+                        (group_id, user_id, filename, user_id))
+                    cnx.commit()  # Commit changes to the database
+                    print("File successfully uploaded and database updated")
+                else:
+                    # Handle the case where user_id is not available in the session
+                    flash('User ID not found. Unable to upload file.', 'error')
+                    print("User ID not found. Unable to upload file.")
+
+    mycursor.execute("SELECT * FROM files WHERE group_id=%s", (group_id,))
+    file_data = mycursor.fetchall()
+
+    return render_template('grouplist.html', data=data, data1=data1, groupteacher=groupteacher, groupname=groupname, file_data=file_data, group_id=group_id)
 
 
 @app.route('/teachersignup')
@@ -1008,8 +1043,26 @@ def report():
     return render_template('report.html', data=data)
 
 
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'xlsx'}
+
+
+def allowed_file(filename):
+    return True
+
+
+UPLOAD_FOLDER = 'uploads/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 @app.route('/agrouplist', methods=['GET', 'POST'])
 def agrouplist():
+
+    cnx = mysql.connector.connect(**config)
+    mycursor = cnx.cursor()
+
     group_id = request.args.get('group_id')
     groupteacher = request.args.get('groupteacher')
     groupname = request.args.get('groupname')
@@ -1040,6 +1093,33 @@ def agrouplist():
             mycursor.execute("INSERT INTO join_groups ( group_id, user_id) VALUES ('" + str(group_id) + "','" + str(
                 userlist_id) + "')")
             cnx.commit()
+    if action == 'file_share':
+        print("Received file upload request")
+        if 'file' in request.files:
+            print("File found in request")
+            file = request.files['file']
+            if file and allowed_file(file.filename):
+                print("File is valid")
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+
+                # Get user_id from the session
+                user_id = session.get('user_id')
+                print(f"User ID: {user_id}")
+
+                if user_id is not None:
+                    # Save file information to the database
+                    mycursor.execute(
+                        "INSERT INTO files (group_id, user_id, file_name, uploaded_by, upload_datetime) VALUES (%s, %s, %s, %s, NOW())",
+                        (group_id, user_id, filename, user_id))
+                    cnx.commit()  # Commit changes to the database
+                    print("File successfully uploaded and database updated")
+                else:
+                    # Handle the case where user_id is not available in the session
+                    flash('User ID not found. Unable to upload file.', 'error')
+                    print("User ID not found. Unable to upload file.")
+
 
     if session['actions'] == 'view_members':
         group_id = session['group_id']
@@ -1066,6 +1146,11 @@ def agrouplist():
                                                     " order by a.accs_id desc")
         data = mycursor.fetchall()
 
+
+
+    mycursor.execute("SELECT * FROM files WHERE group_id=%s", (group_id,))
+    file_data = mycursor.fetchall()
+
     user_id = session['user_id']
     mycursor.execute(
         "select * from random_attendance where DATE(created)=CURDATE() AND TIME_FORMAT(random_time, '%H:%i')>=TIME_FORMAT(CURRENT_TIME(), '%H:%i') AND group_id='" + str(
@@ -1078,9 +1163,11 @@ def agrouplist():
     data4 = mycursor.fetchall()
 
     return render_template('agrouplist.html', data=data, data1=data1, groupteacher=groupteacher, groupname=groupname,
-                           group_id=group_id, data2=data2, data3=data3, data4=data4)
+                           group_id=group_id, data2=data2, data3=data3, data4=data4, file_data=file_data)
 
-
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 @app.route('/loadattendanceData', methods=['GET', 'POST'])
 def loadattendanceData():
     group_id = session['group_id']
@@ -1099,7 +1186,7 @@ def loadattendanceDatareport():
     # group_id = session['group_id']
     if user_role != 'teacher':
         mycursor.execute(
-            "select COUNT(a.accs_prsn) as v, c.group_name, b.first_name, b.last_name,a.accs_prsn,a.group_id from accs_hist a left join users b on a.accs_prsn = b.id left join groups c on a.group_id=c.id WHERE a.accs_prsn='" + str(
+            "select COUNT(a.accs_prsn) as v, c.group_name, b.first_name, b.last_name,a.accs_prsn,a.group_id from accs_hist a left join users b on a.accs_prsn = b.id left join tbl_groups c on a.group_id=c.id WHERE a.accs_prsn='" + str(
                 user_id) + "' GROUP BY a.group_id")
     else:
         mycursor.execute(
@@ -1325,10 +1412,175 @@ def join():
     # Automatically redirect to the meeting page with room_id
     return redirect(f"/meeting?roomID={room_id}")
 
+# -------- Manage Course --------------
+@app.route('/manage_groups')
+def manage_groups():
+    search_term = request.args.get('search_term', '')
+    cnx = mysql.connector.connect(**config)
+    mycursor = cnx.cursor()
+    mycursor.execute("SELECT * FROM tbl_groups WHERE group_name LIKE %s OR creater_id = %s",
+                    (f'%{search_term}%', search_term))
+    groups = mycursor.fetchall()
+    return render_template('manage_groups.html', groups=groups, search_term=search_term)
+
+@app.route('/create_group', methods=['POST'])
+def create_group():
+    group_name = request.form['group_name']
+
+    creater_id = request.form['creater_id']
+
+    cnx = mysql.connector.connect(**config)
+
+    mycursor = cnx.cursor()
+
+    try:
+
+        mycursor.execute("INSERT INTO tbl_groups (group_name, creater_id) VALUES (%s, %s)", (group_name, creater_id))
+
+        cnx.commit()
+
+        return redirect(url_for('manage_groups'))
+
+    except Exception as e:
+
+        # Handle exceptions, print or log the error for debugging
+
+        print(f"Error creating group: {e}")
+
+        cnx.rollback()
+
+        # Optionally, you can redirect to an error page or display an error message
+
+        return "Error creating group. Please try again."
+
+    finally:
+
+        mycursor.close()
+
+        cnx.close()
 
 
-##################################### END USER MANAGEMENT#####################################################
+@app.route('/update_group/<int:group_id>', methods=['GET', 'POST'])
+def update_group(group_id):
+    cnx = mysql.connector.connect(**config)
+    mycursor = cnx.cursor()
 
+    try:
+        mycursor.execute("SELECT * FROM tbl_groups WHERE id = %s", (group_id,))
+        group = mycursor.fetchone()
+
+        if request.method == 'POST':
+            group_id = request.form['group_id']
+            group_name = request.form['group_name']
+            creater_id = request.form['creater_id']
+
+            mycursor.execute("UPDATE tbl_groups SET group_name=%s, creater_id=%s WHERE id=%s",
+                             (group_name, creater_id, group_id))
+            cnx.commit()
+
+            return redirect(url_for('manage_groups'))
+
+    except Exception as e:
+        # Handle exceptions, print or log the error for debugging
+        print(f"Error updating group: {e}")
+        cnx.rollback()
+        # Optionally, you can redirect to an error page or display an error message
+        return "Error updating group. Please try again."
+
+    finally:
+        mycursor.close()
+        cnx.close()
+
+    return render_template('update_group.html', group=group)
+
+@app.route('/delete_group/<int:group_id>')
+def delete_group(group_id):
+    cnx = mysql.connector.connect(**config)
+    mycursor = cnx.cursor()
+
+    # Delete associated records in the files table
+    mycursor.execute("DELETE FROM files WHERE group_id = %s", (group_id,))
+    cnx.commit()
+
+    # Now, you can safely delete the group
+    mycursor.execute("DELETE FROM tbl_groups WHERE id = %s", (group_id,))
+    cnx.commit()
+
+    return redirect(url_for('manage_groups'))
+
+# -----------------END GROUP MANAGEMENT-----------------------
+
+
+# ------------------ Train Request -------------------------
+
+@app.route('/student_dashboard', methods=['GET', 'POST'])
+def student_dashboard():
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+
+        # Establish a connection to the MySQL database
+        cnx = mysql.connector.connect(**config)
+        mycursor = cnx.cursor(buffered=True)
+
+        # Check if the user already exists
+        check_query = "SELECT id FROM users WHERE email = %s"
+        mycursor.execute(check_query, (email,))
+        existing_user = mycursor.fetchone()
+
+        if existing_user:
+            mycursor.close()
+            cnx.close()
+            return render_template('user_exists.html')
+
+        # Insert a new user into the 'users' table
+        insert_query = "INSERT INTO users (first_name, last_name, email, completed_training) VALUES (%s, %s, %s, %s)"
+        values = (first_name, last_name, email, 0)
+        mycursor.execute(insert_query, values)
+
+        cnx.commit()
+        mycursor.close()
+        cnx.close()
+
+        return render_template('request_submitted.html')
+
+    return render_template('student_dashboard.html')
+
+
+@app.route('/admin_dashboard', methods=['GET', 'POST'])
+def admin_dashboard():
+    if request.method == 'POST':
+        student_id = request.form['student_id']
+        decision = request.form['decision']
+
+        # Establish a connection to the MySQL database
+        cnx = mysql.connector.connect(**config)
+        mycursor = cnx.cursor(buffered=True)
+
+        # Update the 'completed_training' field based on the decision
+        update_query = "UPDATE users SET completed_training = %s WHERE id = %s"
+        values = (1 if decision == 'approve' else 0, student_id)
+        mycursor.execute(update_query, values)
+
+        cnx.commit()
+        mycursor.close()
+        cnx.close()
+
+    # Fetch and display pending face change requests
+    cnx = mysql.connector.connect(**config)
+    mycursor = cnx.cursor(buffered=True)
+
+    pending_query = "SELECT id, first_name, last_name, email FROM users WHERE completed_training = 0"
+    mycursor.execute(pending_query)
+    pending_requests = mycursor.fetchall()
+
+    mycursor.close()
+    cnx.close()
+
+    return render_template('admin_dashboard.html', pending_requests=pending_requests)
+
+# -------------------- END TRAIN REQ ----------------
 
 if __name__ == "__main__":
     app.run()
