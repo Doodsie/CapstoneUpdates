@@ -123,4 +123,67 @@ $('#header_page_title').html('Face Registration');
         // Navigate to the URL
         window.location.href = "{{ url_for('train_classifier', nbr=prs) }}";
     });
+
+    function onOpenCvReady() {
+            // OpenCV.js is ready
+
+            // Access the camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    var video = document.getElementById('videoElement');
+                    video.srcObject = stream;
+
+                    video.addEventListener('loadeddata', function () {
+                        processFrames(video);
+                    });
+                })
+                .catch(function (error) {
+                    console.log("Error accessing the camera: " + error);
+                });
+
+            // Face detection function
+            function processFrames(videoElement) {
+                var canvas = document.getElementById('canvasElement');
+                var context = canvas.getContext('2d');
+
+                function detectFaces() {
+                    // Draw the current video frame on the canvas
+                    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                    var frame = context.getImageData(0, 0, canvas.width, canvas.height);
+
+                    // Convert the frame to a Mat
+                    let src = cv.matFromArray(frame.height, frame.width, cv.CV_8UC4, frame.data);
+
+                    // Convert to grayscale
+                    let gray = new cv.Mat();
+                    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+                    // Perform Haar face detection using OpenCV.js
+                    let faces = new cv.RectVector();
+                    let faceCascade = new cv.CascadeClassifier();
+faceCascade.load('https://docs.opencv.org/master/haarcascade_frontalface_default.xml');
+                    faceCascade.detectMultiScale(gray, faces);
+
+                    // Draw rectangles around detected faces
+                    for (let i = 0; i < faces.size(); ++i) {
+                        let face = faces.get(i);
+                        cv.rectangle(src, new cv.Point(face.x, face.y), new cv.Point(face.x + face.width, face.y + face.height), [255, 0, 0, 255]);
+                    }
+
+                    // Display the result
+                    cv.imshow(canvas, src);
+
+                    // Schedule the next face detection
+                    requestAnimationFrame(detectFaces);
+
+                    // Release resources
+                    gray.delete();
+                    faces.delete();
+                    src.delete();
+                }
+
+                // Start the face detection loop
+                detectFaces();
+            }
+        }
 </script>
