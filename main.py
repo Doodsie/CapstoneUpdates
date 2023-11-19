@@ -1162,13 +1162,8 @@ def agrouplist():
             group_id) + "' AND user_id='" + str(user_id) + "'")
     data4 = mycursor.fetchall()
 
-    mycursor.execute(
-        "SELECT id, group_name, date_format(created, '%d-%m-%Y %W %H:%i:%s') FROM tbl_groups WHERE creater_id='" + str(
-            creater_id) + "'")
-    datagroup = mycursor.fetchall()
-
     return render_template('agrouplist.html', data=data, data1=data1, groupteacher=groupteacher, groupname=groupname,
-                           group_id=group_id, data2=data2, data3=data3, data4=data4, file_data=file_data, datagroup=datagroup)
+                           group_id=group_id, data2=data2, data3=data3, data4=data4, file_data=file_data)
 
 @app.route('/download/<filename>')
 def download_file(filename):
