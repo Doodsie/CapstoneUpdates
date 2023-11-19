@@ -1515,4 +1515,4 @@ def admin_dashboard():
 # -------------------- END TRAIN REQ ----------------
 
 if __name__ == "__main__":
-    app.run()
+    app.run(Debugger=True)
