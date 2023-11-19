@@ -32,7 +32,6 @@
                                     {{ item[1] }}
                                 </div>
                                 <div class="col-md-6 text-right" >
-                                <a class="btn btn-warning btn-sm rename-button" data-group-id="{{ item[0] }}" data-group-name="{{ item[1] }}">Rename  <i class="material-icons">create</i></a>
                                 <a class="btn btn-danger btn-sm" href='delete?id={{ item[0] }}&tname=groups' onclick="return confirm('Are you sure you want to remove this group?')">Delete  <i class="material-icons">close</i></a>
                                 </div>
                             </div>
@@ -94,28 +93,6 @@
 	$('.header_nav').removeClass('active');
 	$('.groups').addClass('active');
 	$('#header_page_title').html('Course Channel');
-
-      $(document).ready(function () {
-        // Handle the "Rename" button click
-        $(".rename-button").click(function () {
-            const groupId = $(this).data("group-id");
-            const currentName = $(this).data("group-name");
-
-            // Prompt the user to enter a new name
-            const newName = prompt("Rename the group:", currentName);
-
-            if (newName) {
-                // Update the group name in the table
-                $(this).data("group-name", newName);
-                $(this).closest("tr").find("a.btn-primary").text(newName);
-
-                // Send an AJAX request to update the group name in the backend
-                $.post("/groups", {
-                    group_id: groupId,
-                    new_group_name: newName
-                });
-            }
-        });
     });
 
     $(document).on('click', '.clickable-row', function() {
