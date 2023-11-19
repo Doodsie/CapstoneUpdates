@@ -1085,8 +1085,13 @@ def agrouplist():
 
     user_id = session['user_id']
     mycursor.execute(
-        "select * from random_attendance where DATE(created)=CURDATE() AND TIME_FORMAT(random_time, '%H:%i')>=TIME_FORMAT(CURRENT_TIME(), '%H:%i') AND group_id='" + str(
-            group_id) + "' AND user_id='" + str(user_id) + "'")
+        "SELECT * FROM random_attendance "
+        "WHERE DATE(created) = CURDATE() "
+        "AND TIME(random_time) >= CURRENT_TIME() "
+        "AND group_id = %s "
+        "AND user_id = %s",
+        (group_id, user_id)
+    )
     data3 = mycursor.fetchall()
 
     mycursor.execute(
