@@ -33,47 +33,6 @@ mycursor = cnx.cursor(buffered=True)
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Train Classifier >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-@app.route('/train_classifier/<nbr>')
-def train_classifier(nbr):
-    user_id = session.get('user_id')  # Get the user's ID from the session
-    # dataset_dir = "C:/Users/jd/PycharmProjects/FlaskOpencv_FaceRecognition/dataset"
-    if not has_completed_training(user_id):
-        img_count = get_image_count(user_id)  # Get the image count for the user
-
-        if img_count == 100:
-
-            dataset_dir = "dataset"
-
-            path = [os.path.join(dataset_dir, f) for f in os.listdir(dataset_dir)]
-            faces = []
-            ids = []
-
-            for image in path:
-                img = Image.open(image).convert('L');
-                imageNp = np.array(img, 'uint8')
-                id = int(os.path.split(image)[1].split(".")[1])
-
-                faces.append(imageNp)
-                ids.append(id)
-            ids = np.array(ids)
-
-            # Train the classifier and save
-            clf = cv2.face.LBPHFaceRecognizer_create()
-            clf.train(faces, ids)
-            clf.write("classifier.xml")
-
-            mycursor.execute("UPDATE users SET completed_training = 1 WHERE id = %s", (user_id,))
-            cnx.commit()
-
-            flash('TRAIN SUCCESSFUL.', 'success')
-        else:
-            flash('SORRY, TRAIN MUST BE 100%', 'danger')
-
-    else:
-        flash('YOU CAN ONLY TRAIN ONCE.', 'danger')
-
-    return redirect('/vfdataset_page')
-
 
 def get_image_count(user_id):
     # Assuming you have a database table named img_dataset with user_id field
@@ -348,15 +307,6 @@ def cnt_reset():
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END  Optimization >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-@app.route('/vfdataset_page')
-def vfdataset_page():
-    return render_template('gendataset.html', prs=session['user_id'])
-
-
-@app.route('/vidfeed_dataset/<nbr>')
-def vidfeed_dataset(nbr):
-    # Video streaming route. Put this in the src attribute of an img tag
-    return Response(generate_dataset(nbr), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/video_feed', methods=['GET', 'POST'])
