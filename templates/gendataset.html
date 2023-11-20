@@ -1,4 +1,5 @@
 {% include "header.html" %}
+<script async src="https://docs.opencv.org/master/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
 <style>
     #confirmationModal {
     display: flex;
@@ -127,7 +128,8 @@ $('#header_page_title').html('Face Registration');
     });
 
      function onOpenCvReady() {
-            // OpenCV.js is ready
+    // OpenCV.js is ready
+         let cv = cv || {};
 
             // Access the camera
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -188,4 +190,5 @@ faceCascade.load('https://docs.opencv.org/master/haarcascade_frontalface_default
                 detectFaces();
             }
         }
+
 </script>
