@@ -60,11 +60,7 @@
             <h3><b>Generate Face</b></h3>
             <hr>
             <!--img src="{{ url_for('vidfeed_dataset', nbr=prs) }}" width="100%" height="100%" class="img-thumbnail1" id="addfaceimg"-->
-
-
-            <video id="videoInput" width="640" height="480" autoplay></video>
-<canvas id="canvasFrame" width="640" height="480"></canvas>
-<canvas id="canvasOutput" width="640" height="480"></canvas>
+            <img width="25%" height="25%" class="img-thumbnail1" id="addfaceimg">
             <h4>Please ensure that you are the only one in front of the camera.</h4>
             <h4>Please ensure that you train your face in a good lighting condition.</h4>
         </div>
@@ -127,69 +123,4 @@ $('#header_page_title').html('Face Registration');
         // Navigate to the URL
         window.location.href = "{{ url_for('train_classifier', nbr=prs) }}";
     });
-
-    let video = document.getElementById("videoInput");
-        let canvasFrame = document.getElementById("canvasFrame");
-        let canvasOutput = document.getElementById("canvasOutput");
-        let contextFrame = canvasFrame.getContext("2d");
-        let contextOutput = canvasOutput.getContext("2d");
-
-        let streaming = false;
-        let width = 640;
-        let height = 480;
-        let src = new cv.Mat(height, width, cv.CV_8UC4);
-        let dst = new cv.Mat(height, width, cv.CV_8UC1);
-        let faceClassifier;
-
-        // Load face classifier
-        cv.FS_createDataFile("/", "haarcascade_frontalface_default.xml", YOUR_HAARCASCADE_DATA, true, false, false);
-
-        function onOpenCvReady() {
-            video.srcObject = null;
-            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-                .then(function(stream) {
-                    video.srcObject = stream;
-                    video.play();
-                    streaming = true;
-                    processVideo();
-                })
-                .catch(function(err) {
-                    console.log("An error occurred! " + err);
-                });
-        }
-
-        function face_cropped(img) {
-            cv.cvtColor(img, dst, cv.COLOR_RGBA2GRAY);
-            let faces = new cv.RectVector();
-            faceClassifier.detectMultiScale(dst, faces);
-
-            if (faces.size() === 0) {
-                return null;
-            }
-
-            for (let i = 0; i < faces.size(); ++i) {
-                let face = faces.get(i);
-                let cropped_face = new cv.Mat();
-                dst.roi(face).copyTo(cropped_face);
-                return cropped_face;
-            }
-        }
-
-        function processVideo() {
-            if (!streaming) {
-                return;
-            }
-
-            contextFrame.drawImage(video, 0, 0, width, height);
-            src.data.set(contextFrame.getImageData(0, 0, width, height).data);
-
-            let cropped_face = face_cropped(src);
-
-            if (cropped_face !== null) {
-                cv.imshow("canvasOutput", cropped_face);
-                cropped_face.delete();
-            }
-
-            requestAnimationFrame(processVideo);
-        }
 </script>
