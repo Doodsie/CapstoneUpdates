@@ -61,6 +61,7 @@
             <hr>
             <!--img src="{{ url_for('vidfeed_dataset', nbr=prs) }}" width="100%" height="100%" class="img-thumbnail1" id="addfaceimg"-->
             <img width="25%" height="25%" class="img-thumbnail1" id="addfaceimg">
+            <video id="videoInput" width="640" height="480" autoplay></video>
             <h4>Please ensure that you are the only one in front of the camera.</h4>
             <h4>Please ensure that you train your face in a good lighting condition.</h4>
         </div>
@@ -123,4 +124,52 @@ $('#header_page_title').html('Face Registration');
         // Navigate to the URL
         window.location.href = "{{ url_for('train_classifier', nbr=prs) }}";
     });
+
+  // Replace the previous client-side code
+var video = document.getElementById('videoInput');
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(function (stream) {
+    video.srcObject = stream;
+    video.play();
+  })
+  .catch(function (err) {
+    console.error("Error accessing the camera: " + err);
+  });
+
+function processAndSendFrame() {
+  var src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+  var dst = new cv.Mat();
+  var cap = new cv.VideoCapture(video);
+
+  function process() {
+    cap.read(src);
+    cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+    // Process the frame and convert to base64 or other suitable format
+    var processedImageData = cv.imencode(".jpg", dst).data(); // Convert the processed frame data to Uint8Array
+
+    // Send the processed image data to the server
+    sendToServer(processedImageData);
+
+    requestAnimationFrame(process);
+  }
+
+  video.addEventListener('loadeddata', function () {
+    process();
+  });
+}
+
+function sendToServer(imageData) {
+  // Use AJAX or Fetch API to send the image data to the server
+  fetch('/process_image', {
+    method: 'POST',
+    body: imageData
+  })
+    .then(response => response.json())
+    .then(data => {
+      // Handle response from the server if needed
+    })
+    .catch(error => {
+      console.error('Error sending data to the server:', error);
+    });
+}
 </script>
