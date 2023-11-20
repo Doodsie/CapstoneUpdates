@@ -62,8 +62,9 @@
             <hr>
             <!--img src="{{ url_for('vidfeed_dataset', nbr=prs) }}" width="100%" height="100%" class="img-thumbnail1" id="addfaceimg"-->
             <img width="25%" height="25%" class="img-thumbnail1" id="addfaceimg">
-            <video id="videoElement" width="25%" height="25%" autoplay></video>
-            <canvas id="canvasElement" width="75%" height="75%"></canvas>
+            <video id="videoElement" width="640" height="480" autoplay></video>
+
+    <canvas id="canvasElement" width="640" height="480"></canvas>
             <h4>Please ensure that you are the only one in front of the camera.</h4>
             <h4>Please ensure that you train your face in a good lighting condition.</h4>
         </div>
@@ -127,9 +128,14 @@ $('#header_page_title').html('Face Registration');
         window.location.href = "{{ url_for('train_classifier', nbr=prs) }}";
     });
 
-     function onOpenCvReady() {
-    // OpenCV.js is ready
-         let cv = cv || {};
+     function onOpenCvScriptLoad() {
+            // OpenCV.js script is loaded, initialize cv object
+            cv = cv || {};
+            onOpenCvReady();
+        }
+
+        function onOpenCvReady() {
+            // cv object is ready
 
             // Access the camera
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -165,7 +171,7 @@ $('#header_page_title').html('Face Registration');
                     // Perform Haar face detection using OpenCV.js
                     let faces = new cv.RectVector();
                     let faceCascade = new cv.CascadeClassifier();
-faceCascade.load('https://docs.opencv.org/master/haarcascade_frontalface_default.xml');
+                    faceCascade.load('https://docs.opencv.org/master/haarcascade_frontalface_default.xml');
                     faceCascade.detectMultiScale(gray, faces);
 
                     // Draw rectangles around detected faces
@@ -190,5 +196,4 @@ faceCascade.load('https://docs.opencv.org/master/haarcascade_frontalface_default
                 detectFaces();
             }
         }
-
 </script>
