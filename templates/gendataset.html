@@ -61,7 +61,8 @@
             <hr>
             <!--img src="{{ url_for('vidfeed_dataset', nbr=prs) }}" width="100%" height="100%" class="img-thumbnail1" id="addfaceimg"-->
             <img width="25%" height="25%" class="img-thumbnail1" id="addfaceimg">
-            <img id="videoElement" width="640" height="480" src="{{ url_for('video_feed', nbr='your_nbr') }}" alt="Camera Feed">
+            <video id="videoElement" width="25%" height="25%" autoplay></video>
+            <canvas id="canvasElement" width="25%" height="25%"></canvas>
             <h4>Please ensure that you are the only one in front of the camera.</h4>
             <h4>Please ensure that you train your face in a good lighting condition.</h4>
         </div>
@@ -125,7 +126,7 @@ $('#header_page_title').html('Face Registration');
         window.location.href = "{{ url_for('train_classifier', nbr=prs) }}";
     });
 
-    function onOpenCvReady() {
+     function onOpenCvReady() {
             // OpenCV.js is ready
 
             // Access the camera
