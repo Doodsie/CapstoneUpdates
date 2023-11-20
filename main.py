@@ -307,6 +307,11 @@ def cnt_reset():
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END  Optimization >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+@app.route('/vfdataset_page')
+def vfdataset_page():
+    return render_template('gendataset.html', prs=session['user_id'])
+
+
 
 
 @app.route('/video_feed', methods=['GET', 'POST'])
