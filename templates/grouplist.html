@@ -5,18 +5,20 @@
                           {% if data1 != "" %}
 						<div class="col-md-6">
                             <div class="card">
-                                <div class="card-header card-header-icon" data-background-color="rose">
-                                    <i class="material-icons">mail_outline</i>
+                                <div class="card-header card-header-icon" data-background-color="purple">
+                                    <i class="material-icons">assignment</i>
                                 </div>
                                 <div class="card-content">
+
                                     <h4 class="card-title" style="text-transform:capitalize;"><b>Course :</b> {{ groupname }} &nbsp; <b> Teacher :</b> {{ groupteacher }} </h4>
 
                                         <div class="form-group label-floating">
                                              <div class="material-datatables">
+
                                         <table id="datatables1" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%; text-transform:capitalize;">
                                             <thead>
                                                 <tr>
-                                                    <th><b>Students</b></th>
+                                                    <th><b>STUDENTS</b></th>
 
 
                                                 </tr>
@@ -24,6 +26,7 @@
                                             <tbody>
 												{% for item in data1 %}
                                                 <tr>
+
                                                     <td>{{ item[0] }}&nbsp;{{ item[1] }}</td>
 
 												 </tr>
@@ -44,7 +47,7 @@
                                 <i class="material-icons">file_upload</i>
                             </div>
                             <div class="card-content">
-                                <h4 class="card-title">File Sharing</h4>
+                                <h4 class="card-title"><b>File Sharing</b></h4>
                                 <form action="/grouplist?group_id={{ group_id }}&user_id={{ user_id }}&action=file_share" method="post" enctype="multipart/form-data">
                                     <input type="file" name="file">
                                     <button type="submit" class="btn btn-primary">Upload</button>
@@ -85,30 +88,31 @@
                       {% endif %}
 
 
-                        <div class="md-6">
+                        <div class="md-6" style="margin-top:-60px; ">
                             <div class="card">
-                                <div class="card-header card-header-icon" data-background-color="purple">
+                                <div class="card-header card-header-icon" style="margin-top:-7px;" data-background-color="purple">
                                     <i class="material-icons">assignment</i>
                                 </div>
                                 <div class="card-content">
                                     <h4 class="card-title"><b>Courses</b></h4>
                                     <div class="toolbar">
                                     </div>
-                                    <div class="material-datatables">
-                                        <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%; text-transform:capitalize;">
-                                            <tbody>
-												{% for item in data %}
-                                                <tr>
-                                                    <td>{{ item[1] }}</td>
-                                                    <td>{{ item[3] }}&nbsp;{{ item[4] }}</td>
-													<td><a href='/grouplist?group_id={{ item[0] }}&action=view_members&groupteacher={{ item[3] }}&nbsp;{{ item[4] }}&groupname={{ item[1] }}'><b>View</b></a></td>
-                                                    <td><a href='/join?group_id={{ item[0] }}' class="btn btn-primary">Join Meeting</a></td>
-                                                    <td><a class="btn btn-danger" href='/grouplist?group_id={{ item[0] }}&rurl=grouplist&action=remove'  onclick="return confirm('Are you sure you want to leave this Course?')   "><b>Leave</b></a></td>
-                                                </tr>
-												{% endfor %}
-                                            </tbody>
-                                        </table>
+                                    <div class="material-datatables" style="margin: 20px 20px;">
+
+                                    {% for item in data %}
+                                    <div class="row clickable-row" href='/grouplist?group_id={{ item[0] }}&action=view_members&groupteacher={{ item[3] }}&nbsp;{{ item[4] }}&groupname={{ item[1] }}' style="cursor:pointer; box-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px; border-radius: 10px; padding: 10px; margin-bottom:15px;">
+                                        <div style="margin-top:20px;text-transform: uppercase;" class="col-md-2"><b>{{ item[1] }}</b></div>
+                                        <div style="margin-top:20px;" class="col-md-3">TEACHER : {{ item[3] }}&nbsp;{{ item[4] }}</div>
+                                        <div class="col-md-3 text-right">
+                                            <a href='/join?group_id={{ item[0] }}' class="btn btn-primary">Join Meeting</a>
+                                        </div>
+                                        <div class="col-md-4 text-right">
+                                            <a class="btn btn-danger" href='/grouplist?group_id={{ item[0] }}&rurl=grouplist&action=remove' onclick="return confirm('Are you sure you want to leave this Course?')"><b>Leave</b></a>
+                                        </div>
                                     </div>
+                                    {% endfor %}
+
+
                                 </div>
                                 <!-- end content-->
                             </div>
@@ -170,6 +174,11 @@
 	$('.header_nav').removeClass('active');
 	$('.grouplist').addClass('active');
 	$('#header_page_title').html('Course Channel');
+
+
+    $(document).on('click', '.clickable-row', function() {
+        window.location = $(this).attr('href');
+    });
 
 
 

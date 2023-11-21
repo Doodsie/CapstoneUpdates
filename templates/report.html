@@ -18,7 +18,7 @@
                                         <!--        Here you can write extra buttons/actions for the toolbar              -->
                                     </div><input type="hidden" id="maxindex" value="">
                                     <div class="material-datatables">
-                                        <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%; text-transform:capitalize;">
+                                        <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%; text-transform:capitalize; text-size:-5px;">
                                             <thead>
                                                 <tr>
                                                      <th><b>Course</b></th>
@@ -241,4 +241,8 @@ filename: function(){
                 });
             }
         }
+
+    $('.header_nav').removeClass('active');
+	$('.report').addClass('active');
+	$('#header_page_title').html('Attendance Report');
         </script>
