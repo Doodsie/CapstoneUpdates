@@ -741,6 +741,9 @@ def group_functions():
     userlistid = request.args.get('userlistid')
     group_id = request.args.get('group_id')
     action = request.args.get('action')
+    if not group_id:
+        flash("No course selected. Please Create a course and try again!", "danger")
+        return redirect(url_for('userlist'))
 
     if action == 'invite':
         if not group_id or not userlistid:
