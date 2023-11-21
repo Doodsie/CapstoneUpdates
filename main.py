@@ -885,10 +885,15 @@ def groups():
 @app.route('/delete', methods=['GET', 'POST'])
 def delete():
     id = request.args.get('id')
-    tname = request.args.get('tname')
     rurl = request.args.get('rurl')
-    mycursor.execute("DELETE FROM " + str(tname) + " WHERE id='" + str(id) + "'")
+
+    # Using parameterized query to prevent SQL injection
+    query = "DELETE FROM tbl_groups WHERE id=%s"
+    values = (id,)
+
+    mycursor.execute(query, values)
     cnx.commit()
+
     return redirect(url_for(rurl))
 
 

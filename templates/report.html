@@ -7,7 +7,7 @@
  <div class="content" style="font-size:18px;">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="md-8">
+                        <div class="md-8" style="margin-top:-45px;">
                             <div class="card">
                                 <div class="card-header card-header-icon" data-background-color="purple">
                                     <i class="material-icons">assignment</i>
@@ -21,10 +21,10 @@
                                         <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%; text-transform:capitalize; text-size:-5px;">
                                             <thead>
                                                 <tr>
-                                                     <th><b>Course</b></th>
-                                                     <th><b>First Name</b></th>
-                                                     <th><b>Last Name</b></th>
-                                                     <th><b>Attended</b></th>
+                                                     <th style="font-size:20px;" class="col-sm-3 "><b>Course</b></th>
+                                                     <th style="font-size:20px;" class="col-sm-3 "><b>First Name</b></th>
+                                                     <th style="font-size:20px;" class="col-sm-3 "><b>Last Name</b></th>
+                                                     <th style="font-size:20px;" class="col-sm-3 "><b>Attended</b></th>
                                                 </tr>
                                             </thead>
 
@@ -45,12 +45,21 @@
                                             </tbody>
                                         </table>
                                     </div>
+                                    <hr>
 <form name="ffk3" method="post" action="">
-                         <div class="row">
+                         <div class="row-md">
                             <b> Course Name :</b> <input type="text" name="group" value="">
+                             <br>
+                             <br>
                             <b> Start Date :</b> <input type="date" name="startdate">
+                             <br>
+                             <br>
                             <b> End Date :</b> <input type="date" name="enddate">
+                             <br>
+                             <br>
                             <b> <input class="btn btn-primary btn-sm" type="submit" name="filter" value="Filter"></b>
+                             <br>
+                             <br>
                          </div>
                         </form>
                                 </div>

@@ -98,12 +98,6 @@
 
                                                     </td>
                                                     <td>{{ item[0] }}&nbsp;{{ item[1] }}</td>
-												    <!--td>{% if item[2] == 'teacher' %}
-														  teacher
-													 {% else %}
-														 Users
-													 {% endif %}
-													</td-->
                                                     <td><a href='/agrouplist?userlist_id={{ item[3] }}&action=view_report'>View</a></td>
                                                     <td><a href='/agrouplist?userlist_id={{ item[3] }}&group_id={{ group_id }}&rurl=agrouplist&action=remove' onclick="return confirm('Are you sure you want to remove this student?')">Remove</a></td>
 												 </tr>
