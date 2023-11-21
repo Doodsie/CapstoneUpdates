@@ -741,10 +741,6 @@ def group_functions():
     userlistid = request.args.get('userlistid')
     group_id = request.args.get('group_id')
     action = request.args.get('action')
-    if not group_id:
-        flash("No course selected. Please Create a course and try again!", "danger")
-        return redirect(url_for('userlist'))
-
     if action == 'invite':
         if not group_id or not userlistid:
             flash("Invalid group_id or userlistid", "danger")
@@ -756,6 +752,7 @@ def group_functions():
                 mycursor.execute("INSERT INTO join_groups (group_id, user_id) VALUES (%s, %s)", (group_id, userlistid))
                 cnx.commit()
                 flash("Student added successfully", "success")
+        return redirect(url_for('userlist'))
 
     elif action == 'remove':
         if not group_id or not userlistid:
