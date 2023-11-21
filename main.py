@@ -902,10 +902,21 @@ def grouplist():
     user_id = session['user_id']
     action = request.args.get('action')
     group_id = request.args.get('group_id')
-    if action == 'remove':
+    if action == 'invite' and (group_id is None or group_id == ''):
+        # Handle the error, for example, return an error response
+        return jsonify({'error': 'group_id is required for action=invite'}), 400
+
+    if action == 'invite':
         mycursor.execute(
-            "DELETE FROM join_groups WHERE group_id='" + str(group_id) + "' AND user_id='" + str(user_id) + "'")
-        cnx.commit()
+            "SELECT * FROM join_groups WHERE group_id='" + str(group_id) + "' AND user_id='" + str(userlistid) + "'")
+        account = mycursor.fetchone()
+        if account:
+            msg = ""
+        else:
+            mycursor.execute("INSERT INTO join_groups ( group_id, user_id) VALUES ('" + str(group_id) + "','" + str(
+                userlistid) + "')")
+            cnx.commit()
+        return redirect(url_for('userlist'))
 
     # mycursor.execute("SELECT join_groups.group_id,groups.group_name,join_groups.user_approved FROM join_groups left JOIN groups ON join_groups.group_id=groups.id WHERE user_id='" + str(user_id) + "'")
     mycursor.execute(
