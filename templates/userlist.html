@@ -84,16 +84,16 @@
                                                     <td><span id="gitem_{{ item[1] }}"></span></td>
 													<td>
 													<select id="invite_select_{{ item[1] }}" name="sn{{ item[1] }}" style="width:auto;">
-													{% for item1 in data1 %}
-                                                        {% for item2 in data2 %}
-                                                           {% if item1[0] == item2[1] and item[1] == item2[2]: %}
-												        <option value="{{ item1[0] }}" class="op{{ item[1] }}{{ item1[0] }}">{{ item1[1] }}</option>
-                                                        <script>$('#gitem_{{ item[1] }}').append('{{ item1[1] }}, ');</script>
-                                                           {% endif %}
-                                                        {% endfor %}
-                                                        <option value="{{ item1[0] }}" class="op{{ item[1] }}{{ item1[0] }}">{{ item1[1] }}</option>
-												    {% endfor %}
-													</select>
+    <option value="" class="op{{ item[1] }}">Select a Group</option>
+    {% for item1 in data1 %}
+        {% for item2 in data2 %}
+            {% if item1[0] == item2[1] and item[1] == item2[2] %}
+                <option value="{{ item1[0] }}" class="op{{ item[1] }}{{ item1[0] }}">{{ item1[1] }}</option>
+                <script>$('#gitem_{{ item[1] }}').append('{{ item1[1] }}, ');</script>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+</select>
 													<button class="btn btn-fill btn-rose btn-sm" type="button" onClick="invite({{ item[1] }});">Add</button>
 
 													</td>
