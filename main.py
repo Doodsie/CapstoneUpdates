@@ -752,7 +752,7 @@ def group_functions():
                 mycursor.execute("INSERT INTO join_groups (group_id, user_id) VALUES (%s, %s)", (group_id, userlistid))
                 cnx.commit()
                 flash("Student added successfully", "success")
-        return redirect(url_for('userlist'))
+    return redirect(url_for('userlist'))
 
     elif action == 'remove':
         if not group_id or not userlistid:
