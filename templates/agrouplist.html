@@ -302,7 +302,7 @@
                             <div class="card-content">
                                 <h4 class="card-title">File Sharing</h4>
                                 <form action="/agrouplist?group_id={{ group_id }}&user_id={{ user_id }}&action=file_share" method="post" enctype="multipart/form-data">
-                                    <input type="file" name="file">
+                                    <input type="file" name="file" required>
                                     <button type="submit" class="btn btn-primary">Upload</button>
                                 </form>
                                 {% if file_data %}
