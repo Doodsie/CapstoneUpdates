@@ -741,44 +741,56 @@ def group_functions():
     userlistid = request.args.get('userlistid')
     group_id = request.args.get('group_id')
     action = request.args.get('action')
+
     if action == 'invite':
-        mycursor.execute(
-            "SELECT * FROM join_groups WHERE group_id='" + str(group_id) + "' AND user_id='" + str(userlistid) + "'")
-        account = mycursor.fetchone()
-        if account:
-            msg = ""
+        if not group_id or not userlistid:
+            flash("Invalid group_id or userlistid", "danger")
         else:
-            mycursor.execute("INSERT INTO join_groups ( group_id, user_id) VALUES ('" + str(group_id) + "','" + str(
-                userlistid) + "')")
-            cnx.commit()
-        return redirect(url_for('userlist'))
-
-    if action == 'approved':
-        mycursor.execute(
-            "UPDATE join_groups SET user_approved='1' WHERE group_id='" + str(group_id) + "' AND user_id='" + str(
-                userlistid) + "'")
-        cnx.commit()
-        # return userlist()
-        return redirect(url_for('grouplist'))
-
-    if request.method == "POST":
-        group_id = request.form['select_group']
-        print(group_id)
-        # print(request.form.getlist('userlist[]'))
-        for userlistid in request.form.getlist('userlist[]'):
-            mycursor.execute("SELECT * FROM join_groups WHERE group_id='" + str(group_id) + "' AND user_id='" + str(
-                userlistid) + "'")
-            account = mycursor.fetchone()
+            account = check_membership(group_id, userlistid)
             if account:
-                msg = ""
+                flash("No course selected. Please Create a course and try again!", "danger")
             else:
-                mycursor.execute("INSERT INTO join_groups ( group_id, user_id) VALUES ('" + str(group_id) + "','" + str(
-                    userlistid) + "')")
+                mycursor.execute("INSERT INTO join_groups (group_id, user_id) VALUES (%s, %s)", (group_id, userlistid))
                 cnx.commit()
-            print(userlistid)
+                flash("Student added successfully", "success")
 
-        # return render_template('userlist.html', msg=userlist)
-        return redirect(url_for('userlist'))
+    elif action == 'remove':
+        if not group_id or not userlistid:
+            flash("Invalid group_id or userlistid", "danger")
+        else:
+            account = check_membership(group_id, userlistid)
+            if not account:
+                flash("User is not in the group", "danger")
+            else:
+                mycursor.execute("DELETE FROM join_groups WHERE group_id=%s AND user_id=%s", (group_id, userlistid))
+                cnx.commit()
+                flash("Student removed from the group", "success")
+
+    elif action == 'approved':
+        mycursor.execute(
+            "UPDATE join_groups SET user_approved='1' WHERE group_id=%s AND user_id=%s", (group_id, userlistid))
+        cnx.commit()
+        flash("User approval updated successfully", "success")
+
+    elif request.method == "POST":
+        group_id = request.form['select_group']
+        for userlistid in request.form.getlist('userlist[]'):
+            if not group_id or not userlistid:
+                flash("Invalid group_id or userlistid", "danger")
+            else:
+                account = check_membership(group_id, userlistid)
+                if account:
+                    flash("Student already added to the group", "danger")
+                else:
+                    mycursor.execute("INSERT INTO join_groups (group_id, user_id) VALUES (%s, %s)", (group_id, userlistid))
+                    cnx.commit()
+                    flash("Student added successfully", "success")
+
+    return redirect(url_for('userlist'))
+
+def check_membership(group_id, userlistid):
+    mycursor.execute("SELECT * FROM join_groups WHERE group_id=%s AND user_id=%s", (group_id, userlistid))
+    return mycursor.fetchone()
 
 
 @app.route('/grouprequest', methods=['GET', 'POST'])
