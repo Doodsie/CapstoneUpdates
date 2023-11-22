@@ -500,50 +500,49 @@ function sortAlphaNum(a, b) {
 
 var rt = [];
 var srt = [];
-$("#setrandombtn").click(function () {
-    var group_id = {{ group_id }};
-    var start_time = $('#setstarttime').val();
-    var end_time = $('#setendtime').val();
-    var duration = $('#setattenduration').val();
-    var randomno = parseInt($('#setrandomno').val());
+$("#setrandombtn").click(function(){
+            var group_id = {{ group_id }};
+            var start_time = $('#setstarttime').val();
+            var end_time = $('#setendtime').val();
+            var duration = $('#setattenduration').val();
+            var randomno = parseInt($('#setrandomno').val());
 
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-    var yyyy = today.getFullYear();
+            var today = new Date();
+var dd = String(today.getDate()).padStart(2, '0');
+var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+var yyyy = today.getFullYear();
 
-    today = mm + '-' + dd + '-' + yyyy;
+today = mm + '-' + dd + '-' + yyyy;
+//console.log(today);
+sdt = today +" "+ start_time;
+edt = today +" "+ end_time;
+//console.log(sdt);
+//console.log(edt);
 
-    sdt = today + " " + start_time;
-    edt = today + " " + end_time;
+           rt = [];
+           for(var i=0;i<randomno;i++){
+             //n = randomTime(new Date("08-27-2023 6:30"), new Date("08-27-2023 12:10"));
+             n = randomTime(new Date(sdt), new Date(edt));
+             if(rt.includes(n)){
 
-    rt = [];
-    for (var i = 0; i < randomno; i++) {
-        n = randomTime(new Date(sdt), new Date(edt));
-        if (rt.includes(n)) {
+             }else{
+             rt.push(n);
+             }
+            //console.log(rt);
+           }
+           srt = [];
+           srt = rt.sort(sortAlphaNum);
+           console.log(srt);
+           $('#rdiv').html("");
+           for(var j=0;j<srt.length;j++)
+           {
+              //alert("srt[j]");
+              $('#rdiv').append('<input type="time" name="random_time[]" value="'+srt[j].toString()+'" id="randomtimes_'+j+'" class="btn btn-next1 btn-fill1 btn-wd1">');
+           }
+          //$('#rdiv').append('<br><input type="button" id="saverandomtimes" name="submit" value="Submit" class="btn btn-next1 btn-fill btn-rose pull-right btn-wd1">');
+          $('#saverandomtimes').show();
 
-        } else {
-            rt.push(n);
-        }
-    }
-
-    srt = [];
-    srt = rt.sort(sortAlphaNum);
-
-    console.log(srt);
-
-    $('#rdiv').html("");
-    for (var j = 0; j < srt.length; j++) {
-        // Adjust the time by subtracting 8 hours
-        var adjustedTime = new Date(srt[j]);
-        adjustedTime.setHours(adjustedTime.getHours() - 8);
-        var adjustedTimeString = adjustedTime.toISOString().slice(0, 19).replace("T", " ");
-
-        $('#rdiv').append('<input type="time" name="random_time[]" value="' + adjustedTimeString + '" id="randomtimes_' + j + '" class="btn btn-next1 btn-fill1 btn-wd1">');
-    }
-
-    $('#saverandomtimes').show();
-});
+    });
 
 $("#saverandomtimes1").click(function(){
 
