@@ -6,7 +6,7 @@ from PIL import Image
 import numpy as np
 import os
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import re
 from werkzeug.utils import secure_filename
 
@@ -1233,13 +1233,19 @@ def setrandomattendance():
         status = "active"
         # random_time = str(request.form.getlist['random_time[]'])
         for random_time in request.form.getlist('random_time[]'):
-            print(random_time)
+            original_time = datetime.strptime(random_time, '%Y-%m-%d %H:%M:%S')
+            adjusted_time = original_time - timedelta(hours=8)
+
+            # Convert adjusted_time back to string format
+            adjusted_time_str = adjusted_time.strftime('%Y-%m-%d %H:%M:%S')
+
+            print(adjusted_time_str)
+
             mycursor.execute(
-                "INSERT INTO random_attendance ( user_id, group_id, random_time, duration, status) VALUES ('" + str(
-                    user_id) + "','" + str(
-                    group_id) + "','" + str(random_time) + "','" + str(duration) + "','" + str(status) + "')")
+                "INSERT INTO random_attendance (user_id, group_id, random_time, duration, status) VALUES (%s, %s, %s, %s, %s)",
+                (str(user_id), str(group_id), adjusted_time_str, str(duration), str(status))
+            )
             cnx.commit()
-        print(random_time)
 
     data = ""
     # return jsonify(response=data)
@@ -1250,10 +1256,7 @@ def setrandomattendance():
 def countTodayAttenScan():
     user_id = session['user_id']
     cnx = mysql.connector.connect(**config)
-    # mycursor = cnx.cursor()
     mycursor = cnx.cursor(buffered=True)
-    # mycursor.execute("select a.group_id,a.random_time,now(),CURRENT_TIME() from random_attendance a left join join_groups c on a.group_id=c.group_id WHERE c.user_id='" + str(user_id) + "' AND DATE(a.created)=CURDATE() AND a.random_time>CURRENT_TIME()")
-    # mycursor.execute("select a.id from random_attendance a left join join_groups c on a.group_id=c.group_id WHERE c.user_id='" + str(user_id) + "' AND DATE(a.created)=CURDATE() AND TIME_FORMAT(a.random_time, '%H:%i')=TIME_FORMAT(CURRENT_TIME(), '%H:%i')")
     mycursor.execute(
         "select a.id from random_attendance a left join join_groups c on a.group_id=c.group_id WHERE c.user_id='" + str(
             user_id) + "' AND DATE(a.created)=CURDATE() AND TIME_FORMAT(a.random_time, '%H')=TIME_FORMAT(CURRENT_TIME(), '%H') AND TIME_FORMAT(CURRENT_TIME(), '%i') - TIME_FORMAT(a.random_time, '%i')=0")
