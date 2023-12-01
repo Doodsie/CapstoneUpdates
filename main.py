@@ -1,5 +1,6 @@
 import json
 from flask import Flask, render_template, request, session, redirect, url_for, Response, jsonify, flash,  send_from_directory
+from flask_socketio import SocketIO, emit
 import mysql.connector
 import cv2
 from PIL import Image
@@ -9,6 +10,8 @@ import time
 from datetime import date, datetime
 import re
 from werkzeug.utils import secure_filename
+import io
+import base64
 
 
 app = Flask(__name__)
@@ -16,6 +19,9 @@ app.secret_key = 'pisatindipay'
 cnt = 0
 pause_cnt = 0
 justscanned = False
+socketio = SocketIO(app,cors_allowed_origins='*' )
+#fr_random_attendance_id = ""
+
 
 config = {
     "host": "roundhouse.proxy.rlwy.net",
@@ -24,11 +30,19 @@ config = {
     "database": "zagusopass",
     "port": "20449"
 }
-
+'''
+config = {
+    "host": "localhost",
+    "user": "root",
+    "password": "",
+    "database": "zagusopass"
+}
+'''
 cnx = mysql.connector.connect(**config)
 mycursor = cnx.cursor(buffered=True)
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Generate dataset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+'''
 def generate_dataset(nbr):
     face_classifier = cv2.CascadeClassifier("resources/haarcascade_frontalface_default.xml")
 
@@ -96,6 +110,85 @@ def generate_dataset(nbr):
                 break
                 cap.release()
                 cv2.destroyAllWindows()
+'''
+
+global img_id,count_img,max_imgid
+count_img = 0
+
+def generate_dataset_socket(image):
+    face_classifier = cv2.CascadeClassifier("resources/haarcascade_frontalface_default.xml")
+    '''
+    mycursor.execute("select * from img_dataset WHERE img_person='" + str(nbr) + "'")
+    data1 = mycursor.fetchall()
+    for item in data1:
+        imagePath = "dataset/" + str(nbr) + "." + str(item[0]) + ".jpg"
+        # print(imagePath)
+        try:
+            os.remove(imagePath)
+        except:
+            pass
+    mycursor.execute("delete from img_dataset WHERE img_person='" + str(nbr) + "'")
+    cnx.commit()
+    '''
+    def face_cropped(img):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        faces = face_classifier.detectMultiScale(gray, 1.3, 5)
+        # scaling factor=1.3
+        # Minimum neighbor = 5
+
+        if len(faces) == 0:
+            return None
+        for (x, y, w, h) in faces:
+            cropped_face = img[y:y + h, x:x + w]
+        return cropped_face
+
+
+    '''
+    mycursor.execute("select ifnull(max(img_id), 0) from img_dataset")
+    row = mycursor.fetchone()
+    lastid = row[0]
+    '''
+    global img_id, count_img, max_imgid
+    #img_id = lastid
+    #max_imgid = img_id + 100
+    #count_img = 0
+
+
+    img = image
+    #if int(img_id) <= int(max_imgid) and face_cropped(img) is None:
+            #frame = cv2.resize(img, (200, 200))
+            #frame1 = cv2.imencode('.jpg', frame1)[1].tobytes()
+            #yield (b'--frame1\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame1 + b'\r\n')
+            #return frame1
+    if int(img_id) < int(max_imgid) and face_cropped(img) is not None:
+            count_img += 1
+            img_id += 1
+            print("imgid:"+str(img_id))
+            face = cv2.resize(face_cropped(img), (200, 200))
+            face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+
+            file_name_path = "dataset/" + str(nbr) + "." + str(img_id) + ".jpg"
+            cv2.imwrite(file_name_path, face)
+            cv2.putText(face, str(count_img) + '%', (5, 15), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+
+            mycursor.execute("""INSERT INTO `img_dataset` (`img_id`, `img_person`) VALUES
+                                ('{}', '{}')""".format(img_id, nbr))
+            cnx.commit()
+            if int(img_id) == int(max_imgid):
+                if int(img_id) == int(max_imgid):
+                    cv2.putText(face, "Training Complete", (5, 30), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+                    cv2.putText(face, "Click Train Face.", (5, 45), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+            #frame = cv2.imencode('.jpg', face)[1].tobytes()
+            #yield (b'--frame1\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            frame = face
+            #if int(img_id) == int(max_imgid):
+                #break
+    if int(img_id) <= int(max_imgid) and face_cropped(img) is None:
+        frame = cv2.resize(img, (200, 200))
+        if int(img_id) == int(max_imgid):
+            cv2.putText(frame, "Training Complete", (5, 30), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+            cv2.putText(frame, "Click Train Face.", (5, 45), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
+    return frame
 
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Train Classifier >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -241,7 +334,7 @@ def face_show():
 last_face_detection_time = time.time()
 face_detected = False
 
-
+'''
 def face_recognition(group_id, attendancetime, attendanceduration, random_attendance_id, user_id):
     def draw_boundary(img, classifier, scaleFactor, minNeighbors, color, text, clf):
         global justscanned
@@ -395,7 +488,7 @@ def face_recognition(group_id, attendancetime, attendanceduration, random_attend
 
     cap.release()
     cv2.destroyAllWindows()
-
+'''
 
 def cnt_increment():
     global cnt
@@ -407,6 +500,169 @@ def cnt_reset():
     cnt = 0
 
 
+
+def face_recognition_socket(image):
+    def draw_boundary(img, classifier, scaleFactor, minNeighbors, color, text, clf):
+        global justscanned
+        global pause_cnt
+        global last_face_detection_time
+        global face_detected
+        print("fr:"+str(fr_random_attendance_id))
+        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        features = classifier.detectMultiScale(gray_image, scaleFactor, minNeighbors)
+
+        pause_cnt += 1
+
+        for (x, y, w, h) in features:
+            # Check liveness using HOG descriptor
+            liveness = detect_liveness(img, x, y, w, h)
+            if liveness:
+                cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
+                id, pred = clf.predict(gray_image[y:y + h, x:x + w])
+                confidence = int(100 * (1 - pred / 300))
+
+                if confidence > 80 and not justscanned:
+                    cnt_increment()
+
+                    if int(cnt) == 30:
+                        cnt_reset()
+                        #atime = str(date.today()) + ' ' + str(attendancetime) + ':00'
+
+                        mycursor.execute("select a.img_person, b.first_name, b.last_name "
+                                         "  from img_dataset a "
+                                         "  left join users b on a.img_person = b.id "
+                                         " where a.img_id = " + str(id))
+                        row = mycursor.fetchone()
+                        if row:
+                            pnbr = row[0]
+                            pname = row[1]
+                            ###############################################################################################
+                            #random_attendance_id = session['random_attendance_id']
+                            random_attendance_id = fr_random_attendance_id
+
+                            mycursor.execute("select a.group_id, a.random_time, a.duration "
+                                             "  from random_attendance a "
+                                             " where a.id = " + str(random_attendance_id))
+                            row = mycursor.fetchone()
+                            print(row)
+                            group_id = row[0]
+                            attendancetime = row[1]
+                            attendanceduration = row[2]
+                            #user_id = session['user_id']
+                            atime = str(date.today()) + ' ' + str(attendancetime) + ':00'
+
+                            print("gid" + str(group_id))
+                            ###############################################################################################
+                            mycursor.execute("select count(*) "
+                                             "  from accs_hist "
+                                             " where accs_date = curdate() AND group_id = '" + str(
+                                group_id) + "' AND accs_prsn = '" + str(pnbr) + "' AND random_attendance_id = '" + str(
+                                random_attendance_id) + "'")
+                            row = mycursor.fetchone()
+                            rowcount = row[0]
+
+                            if rowcount > 0:
+                                cv2.putText(img, pname + ', Present', (x - 10, y - 10),
+                                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2, cv2.LINE_AA)
+                                justscanned = True
+                                pause_cnt = 0
+                            else:
+                                cv2.putText(img, pname, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8,
+                                            (153, 255, 255), 2,
+                                            cv2.LINE_AA)
+
+                                mycursor.execute(
+                                    "insert into accs_hist (accs_date, accs_prsn, group_id, accs_added, random_attendance_id) values('" + str(
+                                        date.today()) + "', '" + pnbr + "', '" + str(group_id) + "', '" + str(
+                                        atime) + "', '" + str(
+                                        random_attendance_id) + "')")
+                                cnx.commit()
+
+                                time.sleep(1)
+
+                                justscanned = True
+                                pause_cnt = 0
+                        else:
+                            cv2.putText(img, 'UNKNOWN', (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
+                                        cv2.LINE_AA)
+                    else:
+                        justscanned = False
+                else:
+                    if not justscanned:
+                        cv2.putText(img, 'Spoofing', (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
+                                    cv2.LINE_AA)
+                    else:
+                        cv2.putText(img, 'Present', (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                                    (0, 0, 255), 2, cv2.LINE_AA)
+
+                    if pause_cnt > 80:
+                        justscanned = False
+
+            else:
+                if not justscanned:
+                    cv2.putText(img, 'Spoofing', (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
+                else:
+                    cv2.putText(img, 'Present', (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                                (0, 0, 255), 2, cv2.LINE_AA)
+
+                if pause_cnt > 80:
+                    justscanned = False
+
+    def recognize(img, clf, faceCascade):
+        draw_boundary(img, faceCascade, 1.1, 10, (255, 255, 0), "Face", clf)
+        return img
+
+    def detect_liveness(img, x, y, w, h):
+        global last_face_detection_time
+        global face_detected
+
+        roi = img[y:y + h, x:x + w]
+        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+
+        # Define a region of interest for the face
+        roi_hsv = hsv[int(0.1 * h):int(0.9 * h), int(0.1 * w):int(0.9 * w)]
+        roi_gray = gray[int(0.1 * h):int(0.9 * h), int(0.1 * w):int(0.9 * w)]
+
+        # Calculate gradients
+        gx = cv2.Sobel(roi_gray, cv2.CV_64F, 1, 0, ksize=5)
+        gy = cv2.Sobel(roi_gray, cv2.CV_64F, 0, 1, ksize=5)
+
+        # Combine gradients
+        mag, ang = cv2.cartToPolar(gx, gy)
+        gradient = np.mean(mag)
+
+        # Check liveness
+        if gradient > 20:
+            # Face is detected
+            last_face_detection_time = time.time()
+            face_detected = True
+            return True
+        else:
+            # Face is not detected or considered fake
+            current_time = time.time()
+            if current_time - last_face_detection_time > 1.0 and face_detected:
+                face_detected = False
+                return True  # Detected as a live face
+            return False
+
+    faceCascade = cv2.CascadeClassifier("resources/haarcascade_frontalface_default.xml")
+    clf = cv2.face.LBPHFaceRecognizer_create()
+    clf.read("classifier.xml")
+
+    wCam, hCam = 400, 400
+
+
+    img = recognize(image, clf, faceCascade)
+
+        #frame = cv2.imencode('.jpg', img)[1].tobytes()
+        #yield (b'--frame\r\n'
+               #b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+    return img
+
+
+
+
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END Face Recognition >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
@@ -416,13 +672,39 @@ def cnt_reset():
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END  Optimization >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 @app.route('/vfdataset_page')
 def vfdataset_page():
+    global nbr
+    nbr = session['user_id']
     return render_template('gendataset.html', prs=session['user_id'])
 
 
 @app.route('/vidfeed_dataset/<nbr>')
 def vidfeed_dataset(nbr):
+    mycursor.execute("select * from img_dataset WHERE img_person='" + str(nbr) + "'")
+    data1 = mycursor.fetchall()
+    for item in data1:
+        imagePath = "dataset/" + str(nbr) + "." + str(item[0]) + ".jpg"
+        # print(imagePath)
+        try:
+            os.remove(imagePath)
+        except:
+            pass
+    mycursor.execute("delete from img_dataset WHERE img_person='" + str(nbr) + "'")
+    cnx.commit()
+
+    mycursor.execute("select ifnull(max(img_id), 0) from img_dataset")
+    row = mycursor.fetchone()
+    global lastid
+    lastid = row[0]
+    global count_img
+    count_img = 0
+    print("generate")
+    global img_id
+    img_id = lastid
+    global max_imgid
+    max_imgid = img_id + 100
+
     # Video streaming route. Put this in the src attribute of an img tag
-    return Response(generate_dataset(nbr), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(nbr, mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/video_feed', methods=['GET', 'POST'])
@@ -496,9 +778,19 @@ def fr_page():
     row = mycursor.fetchone()
     # group_id = row[0]
     # session['attendancetime'] = row[1]
+    #print(row)
     session['attendanceduration'] = row[2]
 
     # session['random_attendance_id']="6"
+    #####################################################################################################
+    random_attendance_id = session['random_attendance_id']
+    global fr_random_attendance_id
+    fr_random_attendance_id = random_attendance_id
+    print("frc:"+str(fr_random_attendance_id))
+
+    #######################################################################################################################
+
+
     return render_template('fr_page.html', data=data, data1=atdone)
 
 
@@ -1609,5 +1901,75 @@ def admin_dashboard():
 
 # -------------------- END TRAIN REQ ----------------
 
+def base64_to_image(base64_string):
+    # Extract the base64 encoded binary data from the input string
+    base64_data = base64_string.split(",")[1]
+    # Decode the base64 data to bytes
+    image_bytes = base64.b64decode(base64_data)
+    # Convert the bytes to numpy array
+    image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+    # Decode the numpy array as an image using OpenCV
+    image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    return image
+
+
+@socketio.on("connect")
+def test_connect():
+    print("Connected")
+    emit("my response", {"data": "Connected"})
+
+
+@socketio.on("image")
+def receive_image(image):
+    # Decode the base64-encoded image data
+    image = base64_to_image(image)
+
+    image = face_recognition_socket(image)
+
+
+    #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    frame_resized = image #cv2.resize(gray, (640, 360))
+
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
+
+    result, frame_encoded = cv2.imencode(".jpg", frame_resized, encode_param)
+
+    processed_img_data = base64.b64encode(frame_encoded).decode()
+
+    b64_src = "data:image/jpg;base64,"
+    processed_img_data = b64_src + processed_img_data
+
+    emit("processed_image", processed_img_data)
+
+
+@socketio.on("trainimage")
+def receive_trainimage(image):
+    # Decode the base64-encoded image data
+    image = base64_to_image(image)
+
+    image = generate_dataset_socket(image)
+
+
+    #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    frame_resized = image #cv2.resize(gray, (640, 360))
+
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
+
+    result, frame_encoded = cv2.imencode(".jpg", frame_resized, encode_param)
+
+    processed_img_data = base64.b64encode(frame_encoded).decode()
+
+    b64_src = "data:image/jpg;base64,"
+    processed_img_data = b64_src + processed_img_data
+
+    emit("processed_trainimage", processed_img_data)
+
+
+
 if __name__ == "__main__":
-    app.run()
+    #app.run()
+    #app.run(host='127.0.0.1', port=5000, debug=True)
+    #socketio.run(app, debug=True, port=5000, host='0.0.0.0')
+    socketio.run(app, port=5000, debug=True, allow_unsafe_werkzeug=True)

@@ -46,7 +46,7 @@
       <div class="row mx-auto text-center">
         <div class="col-md-3-lg-2">
             {% if not user_completed_process %}
-            <button onclick="$('#addfaceimg').attr('src','{{ url_for('vidfeed_dataset', nbr=prs) }}'); $('#addfaceimg').show(); $('#addfacestart').hide(); $('#addfacestop').show(); $('#training').show();" id="addfacestart" class="btn btn-warning btn-lg">Start</button>
+            <button onclick="$('#addfaceimg').attr('src','{{ url_for('vidfeed_dataset', nbr=prs) }}'); $('#addfaceimg').show(); $('#addfacestart').hide(); $('#addfacestop').show(); $('#training').show(); socketimage();" id="addfacestart" class="btn btn-warning btn-lg">Start</button>
             <button onclick="$('#addfaceimg').attr('src',''); $('#addfaceimg').hide(); $('#addfacestart').show(); $('#addfacestop').hide();" style="display:none;" class="btn btn-danger btn-lg" id="addfacestop">Stop</button>
 
             <a class="btn btn-success btn-lg" href="{{ url_for('train_classifier', nbr=prs) }}" id="training" style="display:none;"> Train Face</a>
@@ -85,6 +85,7 @@
 </div>
 
 {% include "footer.html" %}
+
 <script>
 $('.header_nav').removeClass('active');
 $('.vfdataset_page').addClass('active');
@@ -124,3 +125,65 @@ $('#header_page_title').html('Face Registration');
         window.location.href = "{{ url_for('train_classifier', nbr=prs) }}";
     });
 </script>
+
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.0/socket.io.js'></script>
+<div id="container" style="display:none;">
+    <video autoplay playsinline id="videoElement"></video>
+    <canvas id="canvas"  width="400" height="300"></canvas>
+    </div>
+
+    <div class = 'video' style="display:none;">
+        <img id="photo"  width="400"  height="300">
+        <h1>video</h1>
+    </div>
+<script type="text/javascript" charset="utf-8">
+
+        var socket = io.connect(
+  window.location.protocol + "//" + document.domain + ":" + location.port
+);
+socket.on("connect", function () {
+  console.log("Connected...!", socket.connected);
+});
+
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+const video = document.querySelector("#videoElement");
+
+video.width = 400;
+video.height = 300;
+
+if (navigator.mediaDevices.getUserMedia) {
+  navigator.mediaDevices
+    .getUserMedia({
+      video: true,
+    })
+    .then(function (stream) {
+      video.srcObject = stream;
+      video.play();
+    })
+    .catch(function (err0r) {});
+}
+
+function socketimage(){
+//alert("start");
+
+
+const FPS = 5;
+setInterval(() => {
+  width = video.width;
+  height = video.height;
+  context.drawImage(video, 0, 0, width, height);
+  var data = canvas.toDataURL("image/jpeg", 0.5);
+  context.clearRect(0, 0, width, height);
+  socket.emit("trainimage", data);
+}, 1000 / FPS);
+
+socket.on("processed_trainimage", function (image) {
+  photo.setAttribute("src", image);
+  addfaceimg.setAttribute("src", image);
+});
+
+}
+
+    </script>

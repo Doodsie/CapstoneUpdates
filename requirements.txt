@@ -12,3 +12,6 @@ numpy
 Pillow
 Werkzeug
 mysql-connector-python
+Flask-SocketIO
+python-engineio
+python-socketio
