@@ -27,7 +27,7 @@ config = {
     "host": "roundhouse.proxy.rlwy.net",
     "user": "root",
     "password": "f4C3ed4bcfAEfachEbC1dfDhBeFdfgA1",
-    "database": "zagusopastry",
+    "database": "zagusopass",
     "port": "20449"
 }
 '''
