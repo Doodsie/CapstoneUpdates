@@ -15,3 +15,10 @@ mysql-connector-python
 Flask-SocketIO
 python-engineio
 python-socketio
+bidict
+h11
+itsdangerous
+netifaces
+simple-websocket
+six
+wsproto

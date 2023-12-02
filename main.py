@@ -1971,7 +1971,4 @@ def receive_trainimage(image):
 if __name__ == "__main__":
     #app.run()
     #app.run(host='127.0.0.1', port=5000, debug=True)
-    #socketio.run(app, debug=True, port=5000, host='0.0.0.0')
-    #socketio.run(app, port=5000, debug=True, allow_unsafe_werkzeug=True)
-    socketio.run(app, port=20449, debug=True, allow_unsafe_werkzeug=True)
-
+    socketio.run(app, port=20499, debug=True, allow_unsafe_werkzeug=True)
