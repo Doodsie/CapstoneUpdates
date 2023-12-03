@@ -1948,7 +1948,7 @@ def receive_image(image):
 
 
 @socketio.on("trainimage")
-def receive_trainimage(image):
+def receive_trainimage(nbr, image):
     # Decode the base64-encoded image data
     image = base64_to_image(image)
 
