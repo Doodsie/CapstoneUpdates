@@ -22,7 +22,7 @@ justscanned = False
 socketio = SocketIO(app,cors_allowed_origins='*' )
 #fr_random_attendance_id = ""
 
-'''
+
 config = {
     "host": "roundhouse.proxy.rlwy.net",
     "user": "root",
@@ -37,7 +37,7 @@ config = {
     "password": "",
     "database": "zagusopass"
 }
-
+'''
 cnx = mysql.connector.connect(**config)
 mycursor = cnx.cursor(buffered=True)
 
