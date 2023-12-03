@@ -112,14 +112,10 @@ def generate_dataset(nbr):
                 cv2.destroyAllWindows()
 '''
 
-img_id = 0
+global img_id,count_img,max_imgid
 count_img = 0
-max_imgid = 100
 
-def generate_dataset_socket(image, nbr):
-    frame = image
-    nbr = session.get('user_id')
-    global img_id, count_img, max_imgid
+def generate_dataset_socket(image):
     face_classifier = cv2.CascadeClassifier("resources/haarcascade_frontalface_default.xml")
     '''
     mycursor.execute("select * from img_dataset WHERE img_person='" + str(nbr) + "'")
@@ -147,12 +143,12 @@ def generate_dataset_socket(image, nbr):
         return cropped_face
 
 
-
     '''
     mycursor.execute("select ifnull(max(img_id), 0) from img_dataset")
     row = mycursor.fetchone()
     lastid = row[0]
     '''
+    global img_id, count_img, max_imgid
     #img_id = lastid
     #max_imgid = img_id + 100
     #count_img = 0
@@ -167,7 +163,7 @@ def generate_dataset_socket(image, nbr):
     if int(img_id) < int(max_imgid) and face_cropped(img) is not None:
             count_img += 1
             img_id += 1
-            print("imgid:" + str(img_id))
+            print("imgid:"+str(img_id))
             face = cv2.resize(face_cropped(img), (200, 200))
             face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
@@ -1358,7 +1354,7 @@ def report():
             "  from accs_hist a "
             "  left join users b on a.accs_prsn = b.id "
             "  left join tbl_groups c on a.group_id = c.id "
-            " where b.id != 0 and c.creater_id = " + str(user_id) +
+            " where b.id != 0"
             "" + str(filters) +
             " order by a.accs_id desc")
 
@@ -1948,11 +1944,11 @@ def receive_image(image):
 
 
 @socketio.on("trainimage")
-def receive_trainimage(nbr, image):
+def receive_trainimage(image):
     # Decode the base64-encoded image data
     image = base64_to_image(image)
 
-    image = generate_dataset_socket(image, nbr)
+    image = generate_dataset_socket(image)
 
 
     #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
