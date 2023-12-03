@@ -1952,7 +1952,7 @@ def receive_trainimage(image):
     # Decode the base64-encoded image data
     image = base64_to_image(image)
 
-    image = generate_dataset_socket(image)
+    image = generate_dataset_socket(image, nbr)
 
 
     #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
