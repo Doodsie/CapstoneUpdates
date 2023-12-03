@@ -118,7 +118,7 @@ max_imgid = 100
 
 def generate_dataset_socket(image, nbr):
     frame = image
-    nbr = session['user_id']
+    nbr = session.get('user_id')
     global img_id, count_img, max_imgid
     face_classifier = cv2.CascadeClassifier("resources/haarcascade_frontalface_default.xml")
     '''
