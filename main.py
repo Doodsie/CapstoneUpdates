@@ -116,7 +116,6 @@ global img_id,count_img,max_imgid
 count_img = 0
 
 def generate_dataset_socket(image):
-    frame = image
     face_classifier = cv2.CascadeClassifier("resources/haarcascade_frontalface_default.xml")
     '''
     mycursor.execute("select * from img_dataset WHERE img_person='" + str(nbr) + "'")
@@ -142,7 +141,6 @@ def generate_dataset_socket(image):
         for (x, y, w, h) in faces:
             cropped_face = img[y:y + h, x:x + w]
         return cropped_face
-
 
 
     '''
@@ -1356,7 +1354,7 @@ def report():
             "  from accs_hist a "
             "  left join users b on a.accs_prsn = b.id "
             "  left join tbl_groups c on a.group_id = c.id "
-            " where b.id != 0 and c.creater_id = " + str(user_id) +
+            " where b.id != 0"
             "" + str(filters) +
             " order by a.accs_id desc")
 
@@ -1967,6 +1965,7 @@ def receive_trainimage(image):
     processed_img_data = b64_src + processed_img_data
 
     emit("processed_trainimage", processed_img_data)
+
 
 
 if __name__ == "__main__":
