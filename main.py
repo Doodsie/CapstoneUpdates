@@ -112,7 +112,7 @@ def generate_dataset(nbr):
                 cv2.destroyAllWindows()
 '''
 
-global img_id,count_img,max_imgid
+####global img_id,count_img,max_imgid
 count_img = 0
 
 def generate_dataset_socket(image):
@@ -724,8 +724,9 @@ def video_feed():
     # attendanceduration = session['attendanceduration']
 
     # Video streaming route. Put this in the src attribute of an img tag
-    return Response(face_recognition(group_id, attendancetime, attendanceduration, random_attendance_id, user_id),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    #return Response(face_recognition(group_id, attendancetime, attendanceduration, random_attendance_id, user_id),
+                    #mimetype='multipart/x-mixed-replace; boundary=frame')
+    return user_id
 
 
 @app.route('/video_show')
@@ -1211,13 +1212,13 @@ def grouplist():
 
     if action == 'invite':
         mycursor.execute(
-            "SELECT * FROM join_groups WHERE group_id='" + str(group_id) + "' AND user_id='" + str(userlistid) + "'")
+            "SELECT * FROM join_groups WHERE group_id='" + str(group_id) + "' AND user_id='" + str(user_id) + "'")
         account = mycursor.fetchone()
         if account:
             msg = ""
         else:
             mycursor.execute("INSERT INTO join_groups ( group_id, user_id) VALUES ('" + str(group_id) + "','" + str(
-                userlistid) + "')")
+                user_id) + "')")
             cnx.commit()
         return redirect(url_for('userlist'))
 
@@ -1354,7 +1355,7 @@ def report():
             "  from accs_hist a "
             "  left join users b on a.accs_prsn = b.id "
             "  left join tbl_groups c on a.group_id = c.id "
-            " where b.id != 0"
+            " where b.id != 0 and c.creater_id = " + str(user_id) +
             "" + str(filters) +
             " order by a.accs_id desc")
 
@@ -1971,4 +1972,4 @@ def receive_trainimage(image):
 if __name__ == "__main__":
     #app.run()
     #app.run(host='127.0.0.1', port=5000, debug=True)
-    socketio.run(app, port=20499, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, port=20449, debug=True, allow_unsafe_werkzeug=True)
