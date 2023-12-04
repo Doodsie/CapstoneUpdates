@@ -114,6 +114,7 @@ def generate_dataset(nbr):
 
 ####global img_id,count_img,max_imgid
 count_img = 0
+img_id = 0
 
 def generate_dataset_socket(image):
     face_classifier = cv2.CascadeClassifier("resources/haarcascade_frontalface_default.xml")
@@ -153,7 +154,7 @@ def generate_dataset_socket(image):
     #max_imgid = img_id + 100
     #count_img = 0
 
-
+    
     img = image
     #if int(img_id) <= int(max_imgid) and face_cropped(img) is None:
             #frame = cv2.resize(img, (200, 200))
