@@ -172,7 +172,7 @@ def generate_dataset_socket(image):
     #img_id=0
     #max_imgid=1
     if int(img_id) < int(max_imgid) and face_cropped(img) is not None:
-            global img_id, count_img, max_imgid
+            #global img_id, count_img, max_imgid
             count_img += 1
             img_id += 1
             print("imgid:"+str(img_id))
