@@ -148,7 +148,7 @@ def generate_dataset_socket(image):
     row = mycursor.fetchone()
     lastid = row[0]
     '''
-    global img_id, count_img, max_imgid
+    ##global img_id, count_img, max_imgid
     #img_id = lastid
     #max_imgid = img_id + 100
     #count_img = 0
@@ -161,6 +161,7 @@ def generate_dataset_socket(image):
             #yield (b'--frame1\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame1 + b'\r\n')
             #return frame1
     if int(img_id) < int(max_imgid) and face_cropped(img) is not None:
+            global img_id, count_img, max_imgid
             count_img += 1
             img_id += 1
             print("imgid:"+str(img_id))
