@@ -12,6 +12,7 @@ import re
 from werkzeug.utils import secure_filename
 import io
 import base64
+from engineio.payload import Payload
 
 
 app = Flask(__name__)
@@ -22,7 +23,8 @@ justscanned = False
 img_id = 0
 max_imgid = 1
 socketio = SocketIO(app,cors_allowed_origins='*' )
-#fr_random_attendance_id = ""
+Payload.max_decode_packets = 500
+#socketio = SocketIO(async_mode='gevent', ping_timeout=cfg.service.PING_TIMEOUT, ping_interval=cfg.service.PING_INTERVAL)
 
 
 config = {
