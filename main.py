@@ -113,6 +113,12 @@ def generate_dataset(nbr):
                 cap.release()
                 cv2.destroyAllWindows()
 '''
+def global_decl():
+    global img_id,count_img,max_imgid
+    img_id = 0
+    max_imgid = 1
+
+global_decl()
 
 ####global img_id,count_img,max_imgid
 count_img = 0
