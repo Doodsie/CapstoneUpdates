@@ -19,6 +19,8 @@ app.secret_key = 'pisatindipay'
 cnt = 0
 pause_cnt = 0
 justscanned = False
+img_id = 0
+max_imgid = 1
 socketio = SocketIO(app,cors_allowed_origins='*' )
 #fr_random_attendance_id = ""
 
@@ -161,10 +163,10 @@ def generate_dataset_socket(image):
             #frame1 = cv2.imencode('.jpg', frame1)[1].tobytes()
             #yield (b'--frame1\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame1 + b'\r\n')
             #return frame1
-    img_id=0
-    max_imgid=1
+    #img_id=0
+    #max_imgid=1
     if int(img_id) < int(max_imgid) and face_cropped(img) is not None:
-            #global img_id, count_img, max_imgid
+            global img_id, count_img, max_imgid
             count_img += 1
             img_id += 1
             print("imgid:"+str(img_id))
