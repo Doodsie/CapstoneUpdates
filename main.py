@@ -157,7 +157,7 @@ def generate_dataset_socket(image):
     row = mycursor.fetchone()
     lastid = row[0]
     '''
-    ##global img_id, count_img, max_imgid
+    global img_id, count_img, max_imgid
     #img_id = lastid
     #max_imgid = img_id + 100
     #count_img = 0
