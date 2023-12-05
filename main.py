@@ -13,7 +13,6 @@ from werkzeug.utils import secure_filename
 import io
 import base64
 from engineio.payload import Payload
-from threading import Thread
 
 
 app = Flask(__name__)
@@ -25,8 +24,6 @@ img_id = 0
 max_imgid = 1
 socketio = SocketIO(app,cors_allowed_origins='*' )
 Payload.max_decode_packets = 50
-
-resized_image = cv2.resize(image, (width, height))
 #socketio = SocketIO(async_mode='gevent', ping_timeout=cfg.service.PING_TIMEOUT, ping_interval=cfg.service.PING_INTERVAL)
 
 
@@ -1938,28 +1935,15 @@ def test_connect():
     print("Connected")
     emit("my response", {"data": "Connected"})
 
-def process_image_and_emit(image):
-    # Process the image
-    processed_image = face_recognition_socket(image)
-
-    # Emit the processed image to clients
-    emit("processed_image", processed_image)
-
 
 @socketio.on("image")
 def receive_image(image):
     # Decode the base64-encoded image data
-    global last_processed_time
-
     image = base64_to_image(image)
 
-    Thread(target=process_image_and_emit, args=(image,)).start()
-
     image = face_recognition_socket(image)
-    if time.time() - last_processed_time >= 0.1:
-        image = base64_to_image(image)
-        Thread(target=process_image_and_emit, args=(image,)).start()
-        last_processed_time = time.time()
+
+
     #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     frame_resized = image #cv2.resize(gray, (640, 360))
@@ -1974,8 +1958,6 @@ def receive_image(image):
     processed_img_data = b64_src + processed_img_data
 
     emit("processed_image", processed_img_data)
-
-
 
 
 @socketio.on("trainimage")
