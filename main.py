@@ -859,6 +859,7 @@ def add_login_view():
 @app.route('/login', methods=['GET', 'POST'])
 def login_submit():
     msg = ""
+    global nbr
     if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
         email = request.form['email']
         password = request.form['password']
@@ -876,7 +877,6 @@ def login_submit():
                 session['user_role'] = account[7]
                 session['user_photo'] = account[13]
                 session['random_attendance_id'] = '0'
-                global nbr
                 nbr = session['user_id']
                 msg = "<div class='alert alert-success'>Successfully LogIn</div>"
                 # return render_template('updateownprofile.html', msg=msg)
@@ -892,7 +892,6 @@ def login_submit():
                 session['user_role'] = account[7]
                 session['user_photo'] = account[13]
                 session['random_attendance_id'] = '0'
-                global nbr
                 nbr = session['user_id']
                 msg = "<div class='alert alert-success'>Successfully LogIn</div>"
                 # return render_template('updateownprofile.html', msg=msg)
@@ -906,7 +905,6 @@ def login_submit():
                 session['user_email'] = account[3]
                 session['user_role'] = account[7]
                 session['user_photo'] = account[13]
-                global nbr
                 nbr = session['user_id']
                 msg = "Successfully LogIn"
                 # return render_template('updateownprofile.html', msg=msg)
