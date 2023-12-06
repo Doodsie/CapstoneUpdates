@@ -175,6 +175,7 @@ def generate_dataset_socket(image):
             #return frame1
     #img_id=0
     #max_imgid=1
+    frame = cv2.resize(img, (200, 200))
     if int(img_id) < int(max_imgid) and face_cropped(img) is not None:
             #global img_id, count_img, max_imgid
             count_img += 1
