@@ -687,8 +687,8 @@ def face_recognition_socket(image):
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END  Optimization >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 @app.route('/vfdataset_page')
 def vfdataset_page():
-    global nbr
-    nbr = session['user_id']
+    #global nbr
+    #nbr = session['user_id']
     global img_id, count_img, max_imgid
     img_id = 0
     return render_template('gendataset.html', prs=session['user_id'])
