@@ -22,7 +22,8 @@ pause_cnt = 0
 justscanned = False
 img_id = 0
 max_imgid = 1
-socketio = SocketIO(app,cors_allowed_origins='*' )
+##socketio = SocketIO(app,cors_allowed_origins='*' )
+socketio = SocketIO(engineio_logger=True, ping_timeout=5, ping_interval=5)
 Payload.max_decode_packets = 50
 #socketio = SocketIO(async_mode='gevent', ping_timeout=cfg.service.PING_TIMEOUT, ping_interval=cfg.service.PING_INTERVAL)
 
